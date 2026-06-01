@@ -1,15 +1,16 @@
 use tokio::io::AsyncWriteExt;
 
-//max len:
-pub enum RawPacket {
+//maybe still a non-raw version for compresion handling? or just bytes?
+//raw presentation of the data
+pub enum Packet {
     Uncompressed { packet_id: u8, bytes: bytes::Bytes },
     Compressed {},
 }
 
-impl RawPacket {
+impl Packet {
     //pub fn from_
 
-    pub fn len(&self) -> usize {
+    pub fn actual_len(&self) -> usize {
         self.bytes.len() + 1 // self.packet_id
     }
 
