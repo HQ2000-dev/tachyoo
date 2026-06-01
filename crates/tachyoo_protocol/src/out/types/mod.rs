@@ -2,8 +2,7 @@
 
 pub mod identifier;
 pub mod string;
-pub mod var_int;
-pub mod var_long;
+pub mod var;
 
 pub type Boolean = bool;
 
