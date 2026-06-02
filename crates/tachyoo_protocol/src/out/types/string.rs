@@ -1,4 +1,4 @@
-use crate::out::types::var::int::{VarInt, var_int};
+use crate::out::types::var::int::VarInt;
 
 //better name!
 pub struct String_ {
@@ -12,13 +12,3 @@ impl String_ {
 }
 
 //TODO: maybe impl Into<Box<str>>??
-pub fn string(string: String) -> Option<String_> {
-    if string.len() > String_::MAX_LENGTH {
-        None
-    } else {
-        Some(String_ {
-            len: var_int(string.len() as i32),
-            data: string.into_boxed_str(),
-        })
-    }
-}

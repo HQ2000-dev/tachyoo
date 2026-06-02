@@ -1,8 +1,8 @@
 //WIP
-//TODO: ascii memory optimization, maybe chars (when asciiChar becomes stable)
+//TODO: ascii memory optimization, maybe ascii chars (when asciiChar becomes stable)
 
 pub struct Identifier {
-    //only contains a-z, 0-9, '.', '-' and '_'
+    //only contains a-z, 0-9, '.', '-' and '_', also cannot be '..'
     namespace: NamespaceId,
     //only contains a-z, 0-9, '.', '-', '/' and '_'
     path: PathId,
