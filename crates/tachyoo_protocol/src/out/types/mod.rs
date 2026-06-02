@@ -1,9 +1,12 @@
 // everything is big endian!!
 // (TODO)
 
+pub mod entity_metadata;
 pub mod identifier;
+pub mod option;
 pub mod string;
 pub mod var;
+pub mod array;
 
 pub type Boolean = bool;
 
