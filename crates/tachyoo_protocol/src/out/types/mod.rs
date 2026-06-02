@@ -1,4 +1,5 @@
 // everything is big endian!!
+// (TODO)
 
 pub mod identifier;
 pub mod string;
@@ -15,3 +16,4 @@ pub type Int = i32;
 pub type Long = i64;
 pub type Float = f32;
 pub type Double = f64;
+pub type UUID=u128;
