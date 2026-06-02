@@ -1,10 +1,8 @@
+use crate::out::Transfer;
 
-use std::convert::Infallible;
+use tokio::io;
 
-use crate::out::{IntoTransferable, Transfer};
-
-use tokio::io::{self, AsyncWriteExt};
-
+/*
 impl<T, I> IntoTransferable for T where T: Iterator<Item=I>, I: Transfer {
     type Transferable = Array<T>;
     type Error = Infallible;
@@ -13,12 +11,32 @@ impl<T, I> IntoTransferable for T where T: Iterator<Item=I>, I: Transfer {
         Ok(Array(self))
     }
 }
+*/
 
-pub struct Array<T>(T);
+//TODO: opt: dense array write (if Transfer gets removed)
+pub struct Array<T> {
+    iter: T,
+}
+
+impl<T> Array<T>
+where
+    T: IntoIterator,
+    <T as IntoIterator>::Item: Transfer,
+{
+    pub fn new(iter: T) -> Array<T> {
+        Array { iter }
+    }
+}
 
 #[async_trait::async_trait]
-impl<'a, T> Transfer for Array<'a, T> where T: Transfer {
+impl<T> Transfer for Array<T>
+where
+    T: Transfer,
+{
     async fn write_to_tcp_stream(&self, stream: tokio::net::TcpStream) -> io::Result<()> {
-        stream.write_all(self.0.)
+        for item in self.iter {
+            item.write_to_tcp_stream(stream)?;
+        }
+        Ok(())
     }
 }
