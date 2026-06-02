@@ -3,17 +3,28 @@ use tokio::io::{self, AsyncWriteExt};
 pub(super) mod raw_packet;
 pub mod types;
 
+//trait for types that implement (fallible) conversion into transferable types
+pub trait IntoTransferable {
+    type Transferable: Transfer;
+    type Error: std::error::Error;
+    /* async */
+    fn try_into_transferable(self) -> Result<Self::Transferable, Self::Error>;
+}
+
+//TODO: define cancel safety requirements
 //types that are reprs for transmission
 #[async_trait::async_trait] //TODO: tmp
-pub trait Transfer: AsRef<[u8]> {
-    async fn write_to_tcp_stream(
+pub trait Transfer {
+    async fn write_to_tcp_stream(&self, stream: tokio::net::TcpStream) -> Result<(), io::Error>;
+
+    /*    async fn write_to_tcp_stream(
         &self,
         mut stream: tokio::net::TcpStream,
     ) -> Result<(), io::Error> {
         //for cancel safety (FIXME)
-        stream.write_all_buf(&mut self.as_ref()).await?;
+        stream.write_all_buf(&mut self.as_bytes()).await?;
         Ok(())
-    }
+    }*/
 }
 
 /*
