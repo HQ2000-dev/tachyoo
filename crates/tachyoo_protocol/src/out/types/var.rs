@@ -14,7 +14,21 @@ pub mod int {
         data: Box<[u8]>,
     }
 
-    impl IntoTransferable for i32 {
+    impl VarInt {
+        pub fn new(num: i32) -> VarInt {
+            let capacity_approx = 0;
+            let mut bytes = Vec::with_capacity(capacity_approx);
+
+            match leb128::write::signed(&mut bytes, num as i64) {
+                Ok(_bytes_written) => VarInt {
+                    data: bytes.into_boxed_slice(),
+                },
+                Err(_) => unreachable!("Vec's Write::write() impl never returns an error"),
+            }
+        }
+    }
+
+    /*impl IntoTransferable for i32 {
         type Transferable = VarInt;
         type Error = Infallible;
         fn try_into_transferable(self) -> Result<Self::Transferable, Self::Error> {
@@ -28,7 +42,7 @@ pub mod int {
                 Err(_) => unreachable!("Vec's Write::write() impl never returns an error"),
             }
         }
-    }
+    }*/
 
     #[async_trait::async_trait]
     impl Transfer for VarInt {
@@ -48,9 +62,9 @@ pub mod long {
 
     use tokio::io::AsyncWriteExt;
 
-    use crate::out::{IntoTransferable, Transfer};
+    use crate::out::Transfer;
 
-    impl IntoTransferable for i64 {
+    /*impl IntoTransferable for i64 {
         type Transferable = VarLong;
         type Error = Infallible;
         fn try_into_transferable(self) -> Result<Self::Transferable, Self::Error> {
@@ -64,11 +78,25 @@ pub mod long {
                 Err(_) => unreachable!("Vec's Write::write() impl never returns an error"),
             }
         }
-    }
+    }*/
 
     #[repr(transparent)]
     pub struct VarLong {
         data: Box<[u8]>,
+    }
+
+    impl VarLong {
+        pub fn new(num: i64) -> VarLong {
+            let capacity_approx = 0;
+            let mut bytes = Vec::with_capacity(capacity_approx);
+
+            match leb128::write::signed(&mut bytes, num) {
+                Ok(_bytes_written) => VarLong {
+                    data: bytes.into_boxed_slice(),
+                },
+                Err(_) => unreachable!("Vec's Write::write() impl never returns an error"),
+            }
+        }
     }
 
     #[async_trait::async_trait]
