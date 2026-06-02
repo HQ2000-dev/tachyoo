@@ -11,7 +11,8 @@ impl Packet {
     //pub fn from_
 
     pub fn actual_len(&self) -> usize {
-        self.bytes.len() + 1 // self.packet_id
+        //self.bytes.len() + 1 // self.packet_id
+        todo!()
     }
 
     pub fn send(&self, stream: tokio::net::TcpStream) {}
