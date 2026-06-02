@@ -3,6 +3,7 @@ use tokio::io::{self, AsyncWriteExt};
 pub(super) mod raw_packet;
 pub mod types;
 
+//maybe still just methods????
 //trait for types that implement (fallible) conversion into transferable types
 pub trait IntoTransferable {
     type Transferable: Transfer;
