@@ -1,0 +1,46 @@
+- data types
+  - [ ] Boolean
+  - [ ] Byte
+  - [ ] Unsigned Byte
+  - [ ] Short
+  - [ ] Unsigned Short
+  - [ ] Int
+  - [ ] Long
+  - [ ] Float
+  - [ ] Double
+  - [ ] String (n)
+  - [ ] Text Component
+  - [ ] JSON Text Component
+  - [ ] Identifier
+  - [x] VarInt
+  - [x] VarLong
+  - [ ] Entity Metadata
+  - [ ] Slot
+  - [ ] Hashed Slot
+  - [ ] NBT
+  - [~] Position
+  - [ ] Angle
+  - [ ] UUID
+  - [ ] BitSet
+  - [ ] Fixed BitSet (n)
+  - [ ] Optional X
+  - [ ] Prefixed Optional
+  - [x] Array of X
+  - [x] Prefixed Array
+  - [ ] X Enum
+  - [ ] EnumSet (n)
+  - [ ] Byte Array
+  - [ ] ID or X
+  - [ ] ID Set
+  - [ ] Sound Event
+  - [ ] Chat Type
+  - [ ] Teleport Flags
+  - [ ] Recipe Display
+  - [ ] Slot Display
+  - [ ] Light Data
+  - [ ] Either X or Y
+  - [ ] Game Profile
+  - [ ] Resolvable Profile
+  - [ ] Debug Subscription Event
+  - [ ] Debug Subscription Update
+  - [ ] LpVec3
