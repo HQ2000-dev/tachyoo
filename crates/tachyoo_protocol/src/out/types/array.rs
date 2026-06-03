@@ -15,27 +15,33 @@ impl<T, I> IntoTransferable for T where T: Iterator<Item=I>, I: Transfer {
 
 //TODO: opt: dense array write (if Transfer gets removed)
 pub struct Array<T> {
-    iter: T,
+    data: Box<[T]>,
 }
 
 impl<T> Array<T>
 where
-    T: IntoIterator,
-    <T as IntoIterator>::Item: Transfer,
+    T: Transfer,
 {
-    pub fn new(iter: T) -> Array<T> {
-        Array { iter }
+    pub fn new(data: Box<[T]>) -> Array<T> {
+        Array { data }
+    }
+
+    pub fn from_iter(iter: impl Iterator) -> Array<T> {
+        //TODO: adjust cap estimate
+        let est_capacity = iter.size_hint().0;
+        let data = Vec::with_capacity(est_capacity).into_boxed_slice();
+
+        Array { data }
     }
 }
 
 #[async_trait::async_trait]
 impl<T> Transfer for Array<T>
 where
-    T: Iterator + Send + Sync + Clone,
-    <T as Iterator>::Item: Transfer + Send + Sync,
+    T: Transfer + Send + Sync,
 {
     async fn write_data(&self, writeable: &mut Writable) -> io::Result<()> {
-        for item in self.iter.clone() {
+        for item in &self.data {
             item.write_data(writeable).await?;
         }
         Ok(())
@@ -43,38 +49,39 @@ where
 }
 
 pub struct PrefixedArray<T> {
-    iter: T,
+    data: Box<[T]>,
 }
 
 impl<T> PrefixedArray<T>
 where
-    T: ExactSizeIterator,
-    <T as Iterator>::Item: Transfer,
+    T: Transfer,
 {
-    pub fn new(iter: T) -> PrefixedArray<T> {
-        PrefixedArray { iter }
+    pub fn new(data: Box<[T]>) -> PrefixedArray<T> {
+        PrefixedArray { data }
     }
 
-    pub fn len(&self) -> usize {
-        self.iter.len()
+    pub fn from_iter(iter: impl Iterator<Item = T>) -> PrefixedArray<T> {
+        let est_capacity = iter.size_hint().1.unwrap_or(5);
+        let data = Vec::with_capacity(est_capacity).into_boxed_slice();
+
+        PrefixedArray { data }
     }
 }
 
 #[async_trait::async_trait]
 impl<T> Transfer for PrefixedArray<T>
 where
-    T: ExactSizeIterator + Send + Sync + Clone,
-    <T as Iterator>::Item: Transfer + Send + Sync,
+    T: Transfer + Send + Sync,
 {
     async fn write_data(&self, writeable: &mut Writable) -> io::Result<()> {
-        VarInt::new(self.iter.len() as i32)
+        VarInt::new(self.data.len() as i32)
             .write_data(writeable)
             .await?;
 
-        for item in self.iter.clone() {
+        for item in &self.data {
             item.write_data(writeable).await?;
         }
-        
+
         //TODO: debug_assert!(count == expected)
         Ok(())
     }
