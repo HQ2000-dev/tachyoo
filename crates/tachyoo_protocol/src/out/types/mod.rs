@@ -5,7 +5,7 @@ use std::ops::Deref;
 
 use tokio::io;
 
-use crate::out::{Transfer, Writable};
+use crate::out::{Transfer, Writable, types::array::Array};
 
 pub mod array;
 pub mod bitset;
@@ -99,10 +99,11 @@ impl Transfer for Double {
 
 pub type UUID = u128;
 
-
 #[async_trait::async_trait]
 impl Transfer for UUID {
     async fn write_data(&self, writeable: &mut Writable) -> io::Result<()> {
         writeable.write_all(&self.to_be_bytes()).await
     }
 }
+
+type ByteArray = Array<u8>;
