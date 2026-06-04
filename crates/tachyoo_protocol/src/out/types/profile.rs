@@ -1,8 +1,16 @@
 use tokio::io;
 
-use crate::out::{Transfer, Writable, types::{UUID, array::PrefixedArray, identifier::Identifier, option::{prefixed::PrefixedOptional, unprefixed::Optional}, string::String_, var::int::VarInt}};
-
-
+use crate::out::{
+    Transfer, Writable,
+    types::{
+        UUID,
+        array::PrefixedArray,
+        identifier::Identifier,
+        option::{prefixed::PrefixedOptional, unprefixed::Optional},
+        string::McString,
+        var::int::VarInt,
+    },
+};
 
 pub struct ResolvableProfile {
     profile_kind: VarInt,
@@ -16,25 +24,33 @@ pub struct ResolvableProfile {
 
 enum Unpack {
     Partial {
-        username: PrefixedOptional<String_<16>>,
+        username: PrefixedOptional<McString<16>>,
         uuid: PrefixedOptional<UUID>,
         //max 16 (TODO)
         props: PrefixedArray<GameProfileProp>,
     },
-    Complete(GameProfile)
+    Complete(GameProfile),
 }
 
 #[async_trait::async_trait]
 impl Transfer for Unpack {
     async fn write_data(&self, writeable: &mut Writable) -> io::Result<()> {
         match self {
-            Unpack::Complete(profile) => {profile.write_data(writeable).await?; },
-            Unpack::Partial { username, uuid, properties } => {
+            Unpack::Complete(profile) => {
+                profile.write_data(writeable).await?;
+            }
+            Unpack::Partial {
+                username,
+                uuid,
+                props,
+            } => {
                 username.write_data(writeable).await?;
                 uuid.write_data(writeable).await?;
-                properties.write_data(writeable).await?;
+                props.write_data(writeable).await?;
             }
         }
+
+        Ok(())
     }
 }
 
@@ -59,16 +75,15 @@ impl Transfer for ResolvableProfile {
 
 pub struct GameProfile {
     uuid: UUID,
-    username: String_<16>,
+    username: McString<16>,
     //max 16 (TODO again)
     props: PrefixedArray<GameProfileProp>,
 }
 
-
 struct GameProfileProp {
-    name:
-    String_<64>, val: String_<32767>, signature: PrefixedOptional<String_<1024>>
-    
+    name: McString<64>,
+    val: McString<32767>,
+    signature: PrefixedOptional<McString<1024>>,
 }
 
 #[async_trait::async_trait]
