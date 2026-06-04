@@ -4,7 +4,10 @@ use tokio::io;
 
 use crate::out::{
     Transfer, Writable,
-    types::{Long, array::PrefixedArray},
+    types::{
+        Long,
+        array::PrefixedArray,
+    },
 };
 
 pub struct BitSet {
@@ -12,16 +15,16 @@ pub struct BitSet {
 }
 
 impl BitSet {
-    pub fn from_iter(iter: impl Iterator<Item = Long>) -> BitSet
-
-    {
+    pub fn from_iter(iter: impl Iterator<Item = Long>) -> BitSet {
         BitSet {
             inner: PrefixedArray::from_iter(iter),
         }
     }
 
     pub fn new(data: Box<[Long]>) -> BitSet {
-        BitSet { inner: PrefixedArray::new(data) }
+        BitSet {
+            inner: PrefixedArray::new(data),
+        }
     }
 }
 
@@ -32,7 +35,7 @@ impl Transfer for BitSet {
     }
 }
 
-
-pub struct FixedBitSet {
-    
+//TODO
+pub struct FixedBitSet<const N: u32> {
+    data: [u8; f64::ceil(N / 8) as usize],
 }
