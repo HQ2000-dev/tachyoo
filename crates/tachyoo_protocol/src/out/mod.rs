@@ -6,7 +6,7 @@ pub mod types;
 //TODO: define cancel safety requirements
 //types that can be infallibly transmitted (written to a tcp stream)
 // maybe just something writable, so less mistakes could happen?
-#[async_trait::async_trait] //TODO: tmp
+#[async_trait::async_trait]
 pub trait Transfer {
     async fn write_data(&self, writeable: &mut Writable) -> io::Result<()>;
 }
