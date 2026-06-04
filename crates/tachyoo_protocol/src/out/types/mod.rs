@@ -10,10 +10,14 @@ use crate::out::{Transfer, Writable, types::array::Array};
 pub mod array;
 pub mod bitset;
 pub mod entity_metadata;
+pub mod fixed_point;
 pub mod identifier;
 pub mod option;
 pub mod pos;
+pub mod registry_data;
+pub mod registry_refs;
 pub mod string;
+pub mod teleport_flags;
 pub mod var;
 
 pub type Boolean = bool;
