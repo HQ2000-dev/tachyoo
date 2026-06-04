@@ -22,6 +22,8 @@ pub mod registry_refs;
 pub mod string;
 pub mod teleport_flags;
 pub mod var;
+pub mod recipe_display;
+pub mod slot_display;
 
 pub type Boolean = bool;
 
