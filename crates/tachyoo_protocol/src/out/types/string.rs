@@ -80,3 +80,5 @@ impl<const MAX_LENGTH: u16> Transfer for McString<MAX_LENGTH> {
         buf.write_all(self.data.as_bytes());
     }
 }
+
+//TODO: unlimited McString
