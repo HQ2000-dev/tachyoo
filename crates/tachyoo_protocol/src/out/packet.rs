@@ -5,6 +5,7 @@ use tokio::io::AsyncWriteExt;
 
 use crate::out::{Transfer, types::var::int::VarInt};
 
+//having the binary data as an input? (TODO)
 //maybe still a non-raw version for compresion handling? or just bytes?
 //raw presentation of the data
 pub enum Packet<T> {
@@ -31,6 +32,10 @@ pub enum Compression {
         threshold: i32,
         level: flate2::Compression,
     },
+}
+
+impl Compression {
+
 }
 
 /*
@@ -71,6 +76,11 @@ impl<T: Transfer> Packet<T> {
                 phantom: PhantomData,
             }
         }
+    }
+
+    pub async fn new_uncompressed(id: i32, transfer: T) -> Packet<T> 
+    {
+        Packet::new(id, transfer, Compression::Uncompressed).await
     }
 
     pub async fn send(&self, mut stream: tokio::net::TcpStream) -> tokio::io::Result<()> {
