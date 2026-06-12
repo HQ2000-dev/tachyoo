@@ -7,19 +7,16 @@ pub struct McString<const MAX_LENGTH: u16> {
     data: Box<str>,
 }
 
+//TODO: move inside the module again?
+pub const ABSOLUTE_MAX_LENGTH: u16 = 32767;
+
 impl<const MAX_LENGTH: u16> McString<MAX_LENGTH> {
-    const __ASSERTION: () = assert!(MAX_LENGTH <= Self::ABSOLUTE_MAX_LENGTH);
-
-    pub const ABSOLUTE_MAX_LENGTH: u16 = 32767;
-
-    pub fn len(&self) -> usize {
-        self.data.len()
-    }
+    const __ASSERTION: () = assert!(MAX_LENGTH <= ABSOLUTE_MAX_LENGTH);
 
     fn is_valid_and_len(str: impl AsRef<str>) -> Result<u16, McStringError> {
         let str = str.as_ref();
 
-        if str.len() * 2 > Self::ABSOLUTE_MAX_LENGTH as usize || str.len() * 2 > MAX_LENGTH as usize
+        if str.len() * 2 > ABSOLUTE_MAX_LENGTH as usize || str.len() * 2 > MAX_LENGTH as usize
         {
             return Err(McStringError(()));
         }
@@ -39,6 +36,17 @@ impl<const MAX_LENGTH: u16> McString<MAX_LENGTH> {
         } else {
             Ok(len)
         }
+    }
+
+    pub fn len(&self) -> u16 {
+        //invariant!!
+        self.data.len() as u16
+    }
+}
+
+impl<const MAX_LEN: u16> AsRef<str> for McString<MAX_LEN> {
+    fn as_ref(&self) -> &str {
+        &self.data
     }
 }
 
@@ -81,4 +89,4 @@ impl<const MAX_LENGTH: u16> Transfer for McString<MAX_LENGTH> {
     }
 }
 
-//TODO: unlimited McString
+pub type MaxLenMcString = McString<ABSOLUTE_MAX_LENGTH>;
