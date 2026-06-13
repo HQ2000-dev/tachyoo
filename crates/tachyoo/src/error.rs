@@ -1,4 +1,4 @@
-use std::{io, net::SocketAddr};
+use std::io;
 
 use snafu::prelude::*;
 
@@ -10,7 +10,7 @@ pub enum ServerError {
     RuntimeCreation {
         source: io::Error,
     },
-    #[snafu(display("Failed to bind to the tcp socket {}", socket_addr))]
+    #[snafu(display("Failed to bind to a tcp socket"))]
     TcpBind {
         source: io::Error,
         //socket_addr: SocketAddr,
