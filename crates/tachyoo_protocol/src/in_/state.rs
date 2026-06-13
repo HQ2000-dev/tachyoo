@@ -1,19 +1,94 @@
-pub enum Handshake {
-    
-}
 
 pub enum Status {
-    
+    StatusRequest = 0,
+    PingRequest = 1,
 }
 
 pub enum Login {
-    
+    Hello = 0,
+    Key = 1,
+    CustomQueryAnswer = 2,
+    LoginAcknowledged = 3,
+    CookieResponse = 4,
 }
 
 pub enum Config {
-    
+    ClientInformation = 0,
+    CookieResponse = 1,
+    CustomPayload = 2,
+    FinishConfiguration = 3,
+    KeepAlive = 4,
+    Pong = 5,
+    ResourcePack = 6,
+    SelectKnownPacks = 7,
+    CustomClickAction = 8,
+    AcceptCodeOfConduct = 9,
 }
 
 pub enum Play {
-    
+    BlockEntityTagQuery = 1,
+    BundleItemSelected = 2,
+    ChangeDifficulty = 3,
+    ChangeGameMode = 4,
+    ChatAck = 5,
+    ChatCommand = 6,
+    ChatCommandSigned = 7,
+    Chat = 8,
+    ChatSessionUpdate = 9,
+    ChunkBatchReceived = 10,
+    ClientCommand = 11,
+    ClientTickEnd = 12,
+    ClientInformation = 13,
+    CommandSuggestion = 14,
+    ConfigurationAcknowledged = 15,
+    ContainerButtonClick = 16,
+    ContainerClick = 17,
+    ContainerClose = 18,
+    ContainerSlotStateChanged = 19,
+    CookieResponse = 20,
+    CustomPayload = 21,
+    DebugSubscriptionRequest = 22,
+    EditBook = 23,
+    EntityTagQuery = 24,
+    Interact = 25,
+    JigsawGenerate = 26,
+    KeepAlive = 27,
+    LockDifficulty = 28,
+    MovePlayerPos = 29,
+    MovePlayerPosRot = 30,
+    MovePlayerRot = 31,
+    MovePlayerStatusOnly = 32,
+    MoveVehicle = 33,
+    PaddleBoat = 34,
+    PickItemFromBlock = 35,
+    PickItemFromEntity = 36,
+    PingRequest = 37,
+    PlaceRecipe = 38,
+    PlayerAbilities = 39,
+    PlayerAction = 40,
+    PlayerCommand = 41,
+    PlayerInput = 42,
+    PlayerLoaded = 43,
+    Pong = 44,
+    RecipeBookChangeSettings = 45,
+    RecipeBookSeenRecipe = 46,
+    RenameItem = 47,
+    ResourcePack = 48,
+    SeenAdvancements = 49,
+    SelectTrade = 50,
+    SetBeacon = 51,
+    SetCarriedItem = 52,
+    SetCommandBlock = 53,
+    SetCommandMinecart = 54,
+    SetCreativeModeSlot = 55,
+    SetJigsawBlock = 56,
+    SetStructureBlock = 57,
+    SetTestBlock = 58,
+    SignUpdate = 59,
+    Swing = 60,
+    TeleportToEntity = 61,
+    TestInstanceBlockAction = 62,
+    UseItemOn = 63,
+    UseItem = 64,
+    CustomClickAction = 65,
 }
