@@ -1,6 +1,7 @@
 use std::io::Write;
 
 pub(super) mod packet;
+pub mod protocol;
 pub mod types;
 
 //TODO: benchmark write_bytes perf

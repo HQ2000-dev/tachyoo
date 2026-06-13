@@ -10,12 +10,9 @@ pub struct ProtocolParser {
 }
 
 impl ProtocolParser {
-    //TODO: hand written future? (also, optimize in general!)
-    pub async fn read<R: AsyncReadExt + Unpin>(&mut self, w: &mut R) -> io::Result<()> {
-        let mut buf=Vec::new();
-        w.read_to_end(&mut buf).await?;
-        self.buffer.extend_from_slice(buf.as_slice());
+    /*pub async fn parse_next<R: AsyncReadExt + Unpin>(&mut self, r: &mut R) -> io::Result<Option> {
+        // r.read(buf)
+
         Ok(())
-        
-    }
+    }*/
 }

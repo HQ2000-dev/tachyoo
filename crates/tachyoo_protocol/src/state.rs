@@ -1,4 +1,3 @@
-
 #[derive(Default, Debug)]
 pub enum ProtocolState {
     #[default]
@@ -7,6 +6,4 @@ pub enum ProtocolState {
     StatRespSent,
     PingRecv,
     PongSent,
-    
-    
 }

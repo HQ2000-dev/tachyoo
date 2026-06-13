@@ -1,3 +1,3 @@
-pub struct ClientData {
-    inner: Masstree
-}
+pub struct ClientId();
+
+pub struct ClientData {}

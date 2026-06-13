@@ -34,9 +34,7 @@ pub enum Compression {
     },
 }
 
-impl Compression {
-
-}
+impl Compression {}
 
 /*
 pub struct Compressed<T> {
@@ -78,8 +76,7 @@ impl<T: Transfer> Packet<T> {
         }
     }
 
-    pub async fn new_uncompressed(id: i32, transfer: T) -> Packet<T> 
-    {
+    pub async fn new_uncompressed(id: i32, transfer: T) -> Packet<T> {
         Packet::new(id, transfer, Compression::Uncompressed).await
     }
 

@@ -16,8 +16,7 @@ impl<const MAX_LENGTH: u16> McString<MAX_LENGTH> {
     fn is_valid_and_len(str: impl AsRef<str>) -> Result<u16, McStringError> {
         let str = str.as_ref();
 
-        if str.len() * 2 > ABSOLUTE_MAX_LENGTH as usize || str.len() * 2 > MAX_LENGTH as usize
-        {
+        if str.len() * 2 > ABSOLUTE_MAX_LENGTH as usize || str.len() * 2 > MAX_LENGTH as usize {
             return Err(McStringError(()));
         }
 

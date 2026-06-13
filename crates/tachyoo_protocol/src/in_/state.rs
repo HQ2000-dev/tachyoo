@@ -1,3 +1,1 @@
-pub enum Protocol {
-    
-}
+pub enum Protocol {}
