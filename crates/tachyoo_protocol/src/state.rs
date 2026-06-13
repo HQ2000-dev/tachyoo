@@ -1,9 +1,9 @@
 #[derive(Default, Debug)]
 pub enum ProtocolState {
+    Handshake,
     #[default]
-    Initial,
-    StatReqRecv,
-    StatRespSent,
-    PingRecv,
-    PongSent,
+    Status,
+    Login,
+    Config,
+    Play,
 }
