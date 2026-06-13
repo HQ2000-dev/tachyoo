@@ -1,0 +1,5 @@
+pub enum PlayerOutEvent {
+    WorldModification {
+        
+    }
+}
