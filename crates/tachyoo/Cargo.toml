@@ -10,11 +10,11 @@ dev=["tokio_console", "snafu/backtrace"]
 tokio_console=["dep:console-subscriber"]
 
 [dependencies]
-bevy_ecs.workspace = true
 thiserror.workspace = true
 tokio = { workspace = true, features=["full"]}
 
 tachyoo_protocol= { path="../tachyoo_protocol"}
+tachyoo_world={path="../tachyoo_world"}
 rustc-hash.workspace = true
 
 

@@ -10,3 +10,5 @@ tokio-console=[]
 
 [dependencies]
 tachyoo={ path="../tachyoo" }
+
+snafu.workspace=true

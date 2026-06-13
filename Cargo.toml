@@ -3,7 +3,7 @@ resolver="3"
 members = ["crates/tachyoo","crates/tachyoo_cli", "crates/tachyoo_data","crates/tachyoo_protocol", "crates/tachyoo_world"]
 
 [workspace.dependencies]
-bevy_ecs = "0.18.1"
+bevy_ecs = {version="0.18.1", default-features=false}
 thiserror = "2.0.18"
 tokio = "1.52.3" 
 
