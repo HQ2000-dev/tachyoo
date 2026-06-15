@@ -1,7 +1,4 @@
-fn validate(data: &u32) -> Result<(), McStringError> {
-    
-}
-
+use crate::in_::types::string::McStringError;
 
 pub struct McString<const MAX_LEN: u16> {
     data: Box<str>,
@@ -13,9 +10,7 @@ pub const ABSOLUTE_MAX_LENGTH: u16 = 32767;
 impl<const MAX_LENGTH: u16> McString<MAX_LENGTH> {
     const __ASSERTION: () = assert!(MAX_LENGTH <= ABSOLUTE_MAX_LENGTH);
 
-    fn new(str: impl AsRef<str>) -> Result<u16, McStringError> {
-
-    }
+    fn new(str: impl AsRef<str>) -> Result<u16, McStringError> {}
 
     pub fn len(&self) -> u16 {
         //invariant!!
@@ -49,17 +44,13 @@ impl<const MAX_LENGTH: u16> TryFrom<Box<str>> for McString<MAX_LENGTH> {
     type Error = McStringError;
 
     fn try_from(string: Box<str>) -> Result<Self, Self::Error> {
-        let len = McString::<MAX_LENGTH>::is_valid_and_len(&*string)?;
+        let (valid, len) =
+            crate::util::string::is_valid_and_len::<MAX_LENGTH, MAX_LENGTH>(&*string);
 
-        Ok(McString { data: string })
+        if valid {
+            Ok(McString { data: string })
+        } else {
+            Err(McStringError::TooLong { len })
+        }
     }
 }
-
-#[derive(Debug, Clone, thiserror::Error)]
-#[error("Not a valid McString")]
-pub struct McStringError(());
-
-pub struct McStr<'a> {
-    data: &'a str,
-}
-
