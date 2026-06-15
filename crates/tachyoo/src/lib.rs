@@ -7,13 +7,15 @@ pub mod util;
 use crate::{
     error::{RuntimeCreationSnafu, ServerError, TcpBindSnafu, TcpConnectSnafu},
     player_task::player_task,
-    util::{cancel_able, shutdown_able},
+    util::cancel_able,
 };
+use console_subscriber::ConsoleLayer;
 use snafu::prelude::*;
 use tokio_util::sync::CancellationToken;
-use tracing::debug;
+use tracing::{debug, error, info};
+use tracing_subscriber::util::SubscriberInitExt;
 
-use std::net::Ipv6Addr;
+use std::{net::Ipv6Addr, time::Duration};
 
 use tokio::{
     net::TcpListener, runtime::Handle, sync::{broadcast, mpsc, watch}, task::JoinSet
@@ -29,9 +31,42 @@ type HashMap<K, V> = rustc_hash::FxHashMap<K, V>;
 pub fn run(options: StartOptions) -> Result<(), ServerError> {
     // hopefully sufficient?
     #[cfg(feature = "tokio_console")]
-    console_subscriber::Builder::default()
-        .with_default_env()
+    {
+        
+        //taken from https://stelfox.net/blog/2023/04/chained-tracing-subscribers/
+        // apparently I'm not the only one with this problem
+        use std::time::Duration;
+        
+        use console_subscriber::ConsoleLayer;
+        use tracing::Level;
+        use tracing_subscriber::{EnvFilter, Layer};
+        use tracing_subscriber::layer::SubscriberExt;
+        use tracing_subscriber::util::SubscriberInitExt;
+
+        
+
+    let console_layer = ConsoleLayer::builder()
+        .retention(Duration::from_secs(30))
+        .spawn();
+
+    let (non_blocking_writer, _guard) = tracing_appender::non_blocking(std::io::stderr());
+    let env_filter = EnvFilter::builder()
+        .with_default_directive(Level::INFO.into())
+        .from_env_lossy();
+    let stderr_layer = tracing_subscriber::fmt::layer()
+        .compact()
+        .with_writer(non_blocking_writer)
+        .with_filter(env_filter);
+
+
+    tracing_subscriber::registry()
+        .with(console_layer)
+        .with(stderr_layer)
         .init();
+    }
+
+    #[cfg(not(feature = "tokio_console"))]
+    tracing_subscriber::FmtSubscriber::new().init();
 
     let rt=tokio::runtime::Builder::new_multi_thread()
         .enable_io()
@@ -41,7 +76,7 @@ pub fn run(options: StartOptions) -> Result<(), ServerError> {
 
     let handle=rt.handle().clone();
 
-    rt.block_on(run_inner(options, handle));
+    rt.block_on(run_inner(options, handle))
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -49,33 +84,49 @@ pub struct ShutdownMsg(pub bool);
 
 async fn run_inner(options: StartOptions, handle: Handle) -> Result<(), ServerError> {
     //TODO: determine buffer size
-    let (conn_tx, conn_rx) = mpsc::channel(100);
+    //let (conn_tx, conn_rx) = mpsc::channel(100);
 
     let cancel_token = CancellationToken::new();
 
-    let player_tasks = JoinSet::new();
+    let cloned_cancel_token=cancel_token.clone();
+
+    let mut player_tasks = JoinSet::new();
+
+    let cloned_handle=handle.clone();
 
     //TODO: make tcp connection accepting optionally silently fail
-    tokio::spawn(cancel_able(cancel_token, async {
+    tokio::spawn(cancel_able(cancel_token.clone(), async move {
         let listener = TcpListener::bind((Ipv6Addr::LOCALHOST, options.port))
             .await
             .context(TcpBindSnafu {})?;
 
+        eprintln!("listening at {}", listener.local_addr().unwrap());
+
+
         loop {
+            /////
+            // tmp, just to make it work
+        let (out_event_tx, out_event_rx) = mpsc::channel(100);
+
+        let (in_event_tx, in_event_rx) = mpsc::channel(100);
+        ////
+
+        
             let (conn, socket_addr) = listener.accept().await.context(TcpConnectSnafu {})?;
-            debug!("accepted tcp connection at {}", socket_addr.ip());
+            info!("accepted tcp connection at {}", socket_addr.ip());
             //TODO: player id association
-            player_tasks.spawn(player_task(handle.clone(), cancel_token, conn));
+            player_tasks.spawn(player_task(handle.clone(), cloned_cancel_token.clone(), conn, out_event_tx, in_event_rx));
         }
     }))
     .await
     // JoinError - panic
     .unwrap()?;
 
+    //separate task for spawn tasks??
     //TODO: better than this?
-    for result in player_tasks.join_all().await {
+    /*for result in player_tasks.join_all().await {
         result?;
-    }
+    }*/
 
     Ok(())
 }

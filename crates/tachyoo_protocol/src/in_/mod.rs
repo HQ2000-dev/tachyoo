@@ -30,7 +30,7 @@ impl ProtocolParser {
     pub async fn parse_next<R: AsyncReadExt>(&mut self, reader: &mut R) -> io::Result<Packet> {
         match self.stage {
             ProtocolStage::Handshake => todo!(),
-            _ => todo!()
+            _ => todo!(),
         }
     }
 }
