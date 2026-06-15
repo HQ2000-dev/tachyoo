@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use crate::{in_::types::string::McStringError, util::string::ABSOLUTE_MAX_LEN};
 
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct McString<const MAX_LEN: u16> {
     data: Box<str>,
 }

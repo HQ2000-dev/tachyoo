@@ -1,7 +1,7 @@
 #[derive(Default, Debug)]
-pub enum ProtocolState {
-    Handshake,
+pub enum ProtocolStage {
     #[default]
+    Handshake,
     Status,
     Login,
     Config,
