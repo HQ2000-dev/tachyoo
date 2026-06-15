@@ -21,3 +21,4 @@ rustc-hash.workspace = true
 console-subscriber= { workspace = true, optional=true} 
 snafu.workspace=true
 tracing.workspace=true
+tokio-util = { version = "0.7.18", features = ["io", "io-util"] }

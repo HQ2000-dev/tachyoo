@@ -1,19 +1,22 @@
 pub mod error;
 pub mod options;
 pub mod player_data;
-pub mod util;
 pub mod player_task;
+pub mod util;
 
-use crate::{error::{RuntimeCreationSnafu, ServerError, TcpBindSnafu, TcpConnectSnafu}, player_task::player_task, util::{never, shutdown_able}};
-use console_subscriber::Server;
+use crate::{
+    error::{RuntimeCreationSnafu, ServerError, TcpBindSnafu, TcpConnectSnafu},
+    player_task::player_task,
+    util::{cancel_able, shutdown_able},
+};
 use snafu::prelude::*;
+use tokio_util::sync::CancellationToken;
 use tracing::debug;
 
 use std::net::Ipv6Addr;
 
 use tokio::{
-    net::TcpListener,
-    sync::{broadcast, mpsc}, task::JoinSet,
+    net::TcpListener, runtime::Handle, sync::{broadcast, mpsc, watch}, task::JoinSet
 };
 
 use crate::options::StartOptions;
@@ -30,29 +33,30 @@ pub fn run(options: StartOptions) -> Result<(), ServerError> {
         .with_default_env()
         .init();
 
-    tokio::runtime::Builder::new_multi_thread()
+    let rt=tokio::runtime::Builder::new_multi_thread()
         .enable_io()
         .enable_time()
         .build()
-        .context(RuntimeCreationSnafu {})?
-        .block_on(run_inner(options))
+        .context(RuntimeCreationSnafu {})?;
+
+    let handle=rt.handle().clone();
+
+    rt.block_on(run_inner(options, handle));
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ShutdownMsg;
+pub struct ShutdownMsg(pub bool);
 
-async fn run_inner(options: StartOptions) -> Result<(), ServerError> {
+async fn run_inner(options: StartOptions, handle: Handle) -> Result<(), ServerError> {
     //TODO: determine buffer size
     let (conn_tx, conn_rx) = mpsc::channel(100);
 
-    let (shutdown_tx, shutdown_rx) = broadcast::channel::<ShutdownMsg>(1);
+    let cancel_token = CancellationToken::new();
 
-    
+    let player_tasks = JoinSet::new();
 
-    let player_tasks=JoinSet::new();
-    
     //TODO: make tcp connection accepting optionally silently fail
-    tokio::spawn(shutdown_able(shutdown_rx, async {
+    tokio::spawn(cancel_able(cancel_token, async {
         let listener = TcpListener::bind((Ipv6Addr::LOCALHOST, options.port))
             .await
             .context(TcpBindSnafu {})?;
@@ -60,9 +64,9 @@ async fn run_inner(options: StartOptions) -> Result<(), ServerError> {
         loop {
             let (conn, socket_addr) = listener.accept().await.context(TcpConnectSnafu {})?;
             debug!("accepted tcp connection at {}", socket_addr.ip());
-            player_tasks.spawn(shutdown_able(shutdown_rx, player_task(conn)));
+            //TODO: player id association
+            player_tasks.spawn(player_task(handle.clone(), cancel_token, conn));
         }
-        
     }))
     .await
     // JoinError - panic
