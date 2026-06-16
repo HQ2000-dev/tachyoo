@@ -1,4 +1,4 @@
-pub mod packet_ids;
+pub mod packets;
 pub mod types;
 pub mod var;
 
@@ -7,7 +7,7 @@ use std::io;
 use bytes::{BufMut, BytesMut};
 use tokio::io::AsyncReadExt;
 
-use crate::{in_::packet_ids::Packet, state::ProtocolStage};
+use crate::{in_::packets::Packet, state::ProtocolStage};
 
 //TODO: try out making it generic over the stage
 pub struct ProtocolParser {
