@@ -2,6 +2,7 @@ use std::net::IpAddr;
 
 use crate::{in_::types::string::str::McStr, out::types::string::McString};
 
+//for manual creation?
 pub fn parse(data: McString<255>) -> Hostname {
     todo!()
 }
@@ -22,8 +23,10 @@ impl Hostname {
         '-',
     ];
 
+    //tmp, just to try test it
     const A: () = assert!(size_of::<Hostname>() < 10);
 
+    //for manual creation?
     fn new(name: McStr<'_, 255>) -> Result<Hostname, HostnameError> {
         for (idx, char) in name.as_ref().chars().enumerate() {
             if Self::ALLOWED_LABEL_CHARS.contains(&char) {
