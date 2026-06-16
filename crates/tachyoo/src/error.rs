@@ -19,6 +19,14 @@ pub enum ServerError {
     TcpConnect {
         source: io::Error,
     },
+   /* #[snafu(display("Failed to read from a tcp stream"))]
+    TcpRead {
+        source: io::Error,
+    },
+    #[snafu(display("Failed to read from a tcp stream"))]
+    TcpWrite {
+        source: io::Error,
+    },*/
     InvalidSocketAddress {
         source: io::Error,
         port: u16,
