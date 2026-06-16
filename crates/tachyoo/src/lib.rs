@@ -113,7 +113,7 @@ async fn run_inner(options: StartOptions, handle: Handle) -> Result<(), ServerEr
 
         
             let (conn, socket_addr) = listener.accept().await.context(TcpConnectSnafu {})?;
-            info!("accepted tcp connection at {}", socket_addr.ip());
+            eprintln!("accepted tcp connection at {}", socket_addr.ip());
             //TODO: player id association
             player_tasks.spawn(player_task(handle.clone(), cloned_cancel_token.clone(), conn, out_event_tx, in_event_rx));
         }

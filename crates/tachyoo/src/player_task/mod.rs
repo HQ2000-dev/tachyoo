@@ -7,6 +7,7 @@ use tachyoo_protocol::in_::{ProtocolParser, packet_ids::Packet as InPacket};
 use tachyoo_protocol::out::packet::Packet as OutPacket;
 use tokio::io::AsyncReadExt;
 use tokio::runtime::Handle;
+use tokio::task::JoinSet;
 use tokio::{
     net::TcpStream,
     select, spawn,
@@ -30,6 +31,8 @@ enum PlayerEvent {
     ReceivedData(Vec<u8>),
 }
 
+//TODO: use try_read/write to detect if the stream was closed
+//TODO: self-cancelling
 pub async fn player_task(
     handle: Handle,
     cancel_token: CancellationToken,
@@ -37,6 +40,10 @@ pub async fn player_task(
     event_tx: mpsc::Sender<PlayerOutEvent>,
     mut event_rx: mpsc::Receiver<PlayerInEvent>,
 ) -> Result<(), ServerError> {
+
+    eprintln!("entered player task");
+
+    let mut local_join_set=JoinSet::<Result<(), ServerError>>::new();
 
     //(TODO: determine perf implications)
     let (mut conn_read, mut conn_write) = conn.into_split();
@@ -59,7 +66,8 @@ pub async fn player_task(
     let parser = ProtocolParser::new();
 
     //same here
-    let packet_read_task = spawn(cancel_able(cancel_token.child_token(), async move {
+    local_join_set.spawn(cancel_able(cancel_token.child_token(), async move {
+        eprintln!("prepared reading packets");
         loop {
             packet_read_tx.send(
                 //  PlayerEvent::ReceivedPacket(
@@ -67,33 +75,48 @@ pub async fn player_task(
             //)
             PlayerEvent::ReceivedData({
                 let mut buf=Vec::new();
-                conn_read.read(&mut buf).await.unwrap();
+                conn_read.read_buf(&mut buf).await.unwrap();
                 buf
             })
             )
             .await
-            .unwrap()
+            .unwrap();
+            //eprintln!("sent an msg");
         }
-    })).await.unwrap()?;
+    }));
+    //.await.unwrap()?;
 
     let (packet_write_tx, mut packet_write_rx) = mpsc::channel(999);
 
     //maybe blocking on compression via a rt handle??
-    let packet_write_task=spawn(cancel_able(cancel_token.child_token(), async move {
+    local_join_set.spawn(cancel_able(cancel_token.child_token(), async move {
         loop {
             packet_write_rx.recv().await.unwrap()
         }
-    })).await.unwrap()?;
+    }));
 
-    cancel_able(cancel_token, async { loop {
-        select! {
-            msg = packet_read_rx.recv() => {
-                if let PlayerEvent::ReceivedData(data) = msg.unwrap() {
-                    eprintln!("{:?}", data);
+
+
+    local_join_set.spawn(cancel_able(cancel_token, async move { 
+        eprintln!("started main player loop");
+        loop {
+        
+            let msg = packet_read_rx.recv().await.unwrap();
+                if let PlayerEvent::ReceivedData(data) = msg {
+                    if !data.is_empty() {
+                        eprintln!("{:?}", data);
+                    } else {
+                        
+                    }
                 } else {
                     unreachable!("well...");
                 }
-            }
-        }
-    } }).await
+            
+        
+    } }));
+
+    for result in local_join_set.join_next().await.unwrap() {
+        result?;
+    }
+    Ok(())
 }
