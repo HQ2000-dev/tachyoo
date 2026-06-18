@@ -16,6 +16,7 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 use tracing::info;
 
+use crate::data::Data;
 use crate::player_data::{self, ClientData};
 use crate::player_task::event_out::PlayerOutEvent::Packet;
 use crate::{
@@ -23,7 +24,6 @@ use crate::{
     player_task::{event_in::PlayerInEvent, event_out::PlayerOutEvent},
     util::cancel_able,
 };
-
 
 #[derive(Debug)]
 pub enum PlayerEvent {
@@ -100,16 +100,21 @@ pub async fn player_task(
     }));
 
     local_join_set.spawn(cancel_able(cancel_token, async move {
+        //TODO: make steps before play state more types safe
         eprintln!("started main player loop");
 
-        let data=Data
+        let data = Data::new();
 
         loop {
             match msg_rx.recv().await.expect("channel closed (todo)") {
                 PlayerEvent::Packet(packet) => match packet {
-                    InPacket::Handshake(data) => eprintln!("received handshake "),
+                    InPacket::Handshake(handshake) => {
+                        eprintln!("received handshake ");
+                        data.conn.handshake_complete(&handshake);
+                    }
+                    _ => todo!(),
                 },
-                    _ => unimplemented!(),
+                _ => unimplemented!(),
             }
         }
     }));

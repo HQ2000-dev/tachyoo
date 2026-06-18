@@ -4,6 +4,15 @@ pub mod client;
 pub mod connection;
 
 pub struct Data {
-    client: ClientData,
-    conn: ConnectionState,
+    pub client: ClientData,
+    pub conn: ConnectionState,
+}
+
+impl Data {
+    pub fn new() -> Data {
+        Data {
+            client: ClientData::new(),
+            conn: ConnectionState::new(),
+        }
+    }
 }

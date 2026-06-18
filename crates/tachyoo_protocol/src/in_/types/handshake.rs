@@ -11,10 +11,10 @@ use crate::in_::types::{
 #[derive(Debug)]
 
 pub struct Handshake {
-    protocol_version: Int,
-    server_address: ServerAddr,
-    server_port: UShort,
-    next_state: Int,
+    pub protocol_version: Int,
+    pub server_address: ServerAddr,
+    pub server_port: UShort,
+    pub intent: Intent,
 }
 
 pub async fn parse_handshake<R: AsyncReadExt + Unpin>(
@@ -29,14 +29,33 @@ pub async fn parse_handshake<R: AsyncReadExt + Unpin>(
 
     let server_port = parse_ushort(reader).await?;
 
-    let (next_state, next_state_len) = parse_var_int(reader).await?;
+    let (intent_raw, intent_raw_len) = parse_var_int(reader).await?;
 
-    assert_eq!(next_state_len, 1);
+    let intent=Intent::try_from_i32(intent_raw).expect("todo: invalid packet handling");
+
 
     Ok(Handshake {
         protocol_version,
         server_address,
         server_port,
-        next_state,
+        intent,
     })
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Intent {
+Status = 1,
+Login = 2,
+Transfer = 3,
+}
+
+impl Intent {
+    pub fn try_from_i32(val : i32) -> Option<Intent> {
+        match val {
+            1 => Some(Intent::Status),
+            2 => Some(Intent::Login),
+            3 => Some(Intent::Transfer),
+            _ => None,
+        }
+    }
 }

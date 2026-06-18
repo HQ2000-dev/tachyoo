@@ -1,6 +1,6 @@
+pub mod data;
 pub mod error;
 pub mod options;
-pub mod data;
 pub mod player_task;
 pub mod util;
 
