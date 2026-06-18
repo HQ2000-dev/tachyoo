@@ -3,7 +3,10 @@ pub mod raw;
 
 use std::default;
 
-use crate::in_::{packets::play::Play, types::{Long, handshake::Handshake}};
+use crate::in_::{
+    packets::play::Play,
+    types::{Long, handshake::Handshake},
+};
 
 #[derive(Default, Debug)]
 pub enum Compression {
@@ -11,18 +14,17 @@ pub enum Compression {
     Uncompressed,
     Compressed {
         threshold: u16,
-    }
+    },
 }
 
 const _: () = {
     //we don't want the enum to get too big
     // TODO: consider boxing bigger variants or dynamic dispatch
-    //assert!(size_of::<Packet>() < 20);
+    assert!(size_of::<Packet>() < 45);
 };
 
 #[derive(Debug)]
 pub enum Packet {
-
     Handshake(Handshake),
     Status(Status),
     Login(Login),
@@ -82,4 +84,3 @@ pub enum Config {
     CustomClickAction = 8,
     AcceptCodeOfConduct = 9,
 }
-

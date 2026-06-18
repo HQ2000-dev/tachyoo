@@ -16,20 +16,21 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 use tracing::info;
 
+use crate::player_data::{self, ClientData};
+use crate::player_task::event_out::PlayerOutEvent::Packet;
 use crate::{
-    ShutdownMsg,
     error::ServerError,
     player_task::{event_in::PlayerInEvent, event_out::PlayerOutEvent},
     util::cancel_able,
 };
 
+
 #[derive(Debug)]
-enum PlayerEvent {
-    //TODO
-    ReceivedPacket(tachyoo_protocol::in_::packets::Packet),
-    ReceivedEvent(PlayerInEvent),
+pub enum PlayerEvent {
+    Packet(tachyoo_protocol::in_::packets::Packet),
+    Event(PlayerInEvent),
     #[cfg(feature = "dev")]
-    ReceivedData(Vec<u8>),
+    Data(Vec<u8>),
 }
 
 //TODO: use try_read/write to detect if the stream was closed
@@ -38,19 +39,19 @@ pub async fn player_task(
     handle: Handle,
     cancel_token: CancellationToken,
     conn: TcpStream,
+    //TODO: maybe collapse this into a PlayerEvent Sender
     event_tx: mpsc::Sender<PlayerOutEvent>,
     mut event_rx: mpsc::Receiver<PlayerInEvent>,
 ) -> Result<(), ServerError> {
-
     eprintln!("entered player task");
 
-    let mut local_join_set=JoinSet::<Result<(), ServerError>>::new();
+    let mut local_join_set = JoinSet::<Result<(), ServerError>>::new();
 
     //(TODO: determine perf implications)
     let (mut conn_read, mut conn_write) = conn.into_split();
-    
+
     //TODO: determine limit
-    let (msg_tx, msg_rx) = mpsc::channel::<PlayerEvent>(999);
+    let (msg_tx, mut msg_rx) = mpsc::channel::<PlayerEvent>(999);
 
     //TODO: just require PlayerEvents to be sent?
     // tmp commented out
@@ -62,7 +63,7 @@ pub async fn player_task(
         }
     })).await.unwrap();*/
 
-    let (packet_read_tx, mut packet_read_rx) = mpsc::channel(999);
+    //let (packet_read_tx, mut packet_read_rx) = mpsc::channel(999);
 
     let mut parser = ProtocolParser::new();
 
@@ -70,19 +71,21 @@ pub async fn player_task(
     local_join_set.spawn(cancel_able(cancel_token.child_token(), async move {
         eprintln!("prepared reading packets");
         loop {
-            packet_read_tx.send(
-                  PlayerEvent::ReceivedPacket(
-                        parser.parse_packet(&mut conn_read).await.expect("TODO: proper io error (especially unexpected eof) handling!"),
-            )
-            /*PlayerEvent::ReceivedData({
-                let mut buf=Vec::new();
-                conn_read.read_buf(&mut buf).await.unwrap();
-                buf
-            })*/
-            )
-            .await
-            .unwrap();
-            //eprintln!("sent an msg");
+            msg_tx
+                .send(
+                    PlayerEvent::Packet(
+                        parser
+                            .parse_packet(&mut conn_read)
+                            .await
+                            .expect("TODO: proper io error (especially unexpected eof) handling!"),
+                    ), /*PlayerEvent::ReceivedData({
+                           let mut buf=Vec::new();
+                           conn_read.read_buf(&mut buf).await.unwrap();
+                           buf
+                       })*/
+                )
+                .await
+                .unwrap();
         }
     }));
     //.await.unwrap()?;
@@ -96,18 +99,22 @@ pub async fn player_task(
         }
     }));
 
-
-
-    local_join_set.spawn(cancel_able(cancel_token, async move { 
+    local_join_set.spawn(cancel_able(cancel_token, async move {
         eprintln!("started main player loop");
-        loop {
-        
-            let msg = packet_read_rx.recv().await.unwrap();
-            eprintln!("{msg:?}");
-            
-        
-    } }));
 
+        let data=Data
+
+        loop {
+            match msg_rx.recv().await.expect("channel closed (todo)") {
+                PlayerEvent::Packet(packet) => match packet {
+                    InPacket::Handshake(data) => eprintln!("received handshake "),
+                },
+                    _ => unimplemented!(),
+            }
+        }
+    }));
+
+    //TODO: better solution
     for result in local_join_set.join_next().await.unwrap() {
         result?;
     }

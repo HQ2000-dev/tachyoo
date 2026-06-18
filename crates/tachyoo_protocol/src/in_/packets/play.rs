@@ -1,4 +1,3 @@
-
 #[derive(Debug)]
 pub enum Play {
     BlockEntityTagQuery = 1,

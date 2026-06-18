@@ -1,3 +1,3 @@
 pub enum PlayerOutEvent {
-    Packet {}
+    Packet {},
 }

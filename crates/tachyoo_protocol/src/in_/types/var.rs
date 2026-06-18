@@ -1,11 +1,12 @@
-
-
 pub mod int {
     pub mod signed {
-        use std::{io::{self, ErrorKind::UnexpectedEof}, thread};
+        use std::{
+            io::{self, ErrorKind::UnexpectedEof},
+            thread,
+        };
 
         use leb128::read::Error;
-use tokio::{io::AsyncReadExt, task::block_in_place};
+        use tokio::{io::AsyncReadExt, task::block_in_place};
         use tokio_util::io::SyncIoBridge;
 
         use crate::in_::types::Int;
@@ -26,7 +27,7 @@ use tokio::{io::AsyncReadExt, task::block_in_place};
                         Error::IoError(e) => return Err(e),
                         Error::Overflow => todo!(),
                     },
-        
+
                     Ok(val) => return Ok((val as i32, i)),
                 }
             }
@@ -44,7 +45,9 @@ use tokio::{io::AsyncReadExt, task::block_in_place};
 
         //TODO: own implementaion!!!
         // (this is very inefficient, I think)
-        pub async fn parse_var_uint<R: AsyncReadExt + Unpin>(reader: &mut R) -> io::Result<(UInt, usize)> {
+        pub async fn parse_var_uint<R: AsyncReadExt + Unpin>(
+            reader: &mut R,
+        ) -> io::Result<(UInt, usize)> {
             let mut total = Vec::new();
             for i in 1.. {
                 let mut data = [0u8];
@@ -56,7 +59,7 @@ use tokio::{io::AsyncReadExt, task::block_in_place};
                         Error::IoError(e) => return Err(e),
                         Error::Overflow => todo!(),
                     },
-        
+
                     Ok(val) => return Ok((val as u32, i)),
                 }
             }
@@ -77,7 +80,9 @@ pub mod long {
 
         //TODO: own implementaion!!!
         // (this is very inefficient, I think)
-        pub async fn parse_var_long<R: AsyncReadExt + Unpin>(reader: &mut R) -> io::Result<(Long, usize)> {
+        pub async fn parse_var_long<R: AsyncReadExt + Unpin>(
+            reader: &mut R,
+        ) -> io::Result<(Long, usize)> {
             let mut total = Vec::new();
             for i in 1.. {
                 let mut data = [0u8];
@@ -89,7 +94,7 @@ pub mod long {
                         Error::IoError(e) => return Err(e),
                         Error::Overflow => todo!(),
                     },
-        
+
                     Ok(val) => return Ok((val, i)),
                 }
             }
@@ -100,14 +105,16 @@ pub mod long {
         use std::io::{self, ErrorKind::UnexpectedEof};
 
         use leb128::read::Error;
-use tokio::{io::AsyncReadExt, task::block_in_place};
+        use tokio::{io::AsyncReadExt, task::block_in_place};
         use tokio_util::io::SyncIoBridge;
 
-        use crate::in_::types::{ULong};
+        use crate::in_::types::ULong;
 
         //TODO: own implementaion!!!
         // (this is very inefficient, I think)
-        pub async fn parse_var_ulong<R: AsyncReadExt + Unpin>(reader: &mut R) -> io::Result<(ULong, usize)> {
+        pub async fn parse_var_ulong<R: AsyncReadExt + Unpin>(
+            reader: &mut R,
+        ) -> io::Result<(ULong, usize)> {
             let mut total = Vec::new();
             for i in 1.. {
                 let mut data = [0u8];
@@ -119,7 +126,7 @@ use tokio::{io::AsyncReadExt, task::block_in_place};
                         Error::IoError(e) => return Err(e),
                         Error::Overflow => todo!(),
                     },
-        
+
                     Ok(val) => return Ok((val, i)),
                 }
             }

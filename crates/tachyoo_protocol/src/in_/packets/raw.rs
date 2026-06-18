@@ -12,5 +12,3 @@ pub struct RawPacket<'a, R: AsyncReadExt + Unpin> {
     id: i32,
     reader: &'a mut R,
 }
-
-

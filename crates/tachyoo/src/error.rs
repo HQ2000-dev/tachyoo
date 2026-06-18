@@ -19,7 +19,7 @@ pub enum ServerError {
     TcpConnect {
         source: io::Error,
     },
-   /* #[snafu(display("Failed to read from a tcp stream"))]
+    /* #[snafu(display("Failed to read from a tcp stream"))]
     TcpRead {
         source: io::Error,
     },

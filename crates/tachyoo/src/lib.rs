@@ -1,6 +1,6 @@
 pub mod error;
 pub mod options;
-pub mod player_data;
+pub mod data;
 pub mod player_task;
 pub mod util;
 
@@ -18,7 +18,10 @@ use tracing_subscriber::util::SubscriberInitExt;
 use std::{net::Ipv6Addr, time::Duration};
 
 use tokio::{
-    net::TcpListener, runtime::Handle, sync::{broadcast, mpsc, watch}, task::JoinSet
+    net::TcpListener,
+    runtime::Handle,
+    sync::{broadcast, mpsc, watch},
+    task::JoinSet,
 };
 
 use crate::options::StartOptions;
@@ -32,49 +35,45 @@ pub fn run(options: StartOptions) -> Result<(), ServerError> {
     // hopefully sufficient?
     #[cfg(feature = "tokio_console")]
     {
-        
         //taken from https://stelfox.net/blog/2023/04/chained-tracing-subscribers/
         // apparently I'm not the only one with this problem
         use std::time::Duration;
-        
+
         use console_subscriber::ConsoleLayer;
         use tracing::Level;
-        use tracing_subscriber::{EnvFilter, Layer};
         use tracing_subscriber::layer::SubscriberExt;
         use tracing_subscriber::util::SubscriberInitExt;
+        use tracing_subscriber::{EnvFilter, Layer};
 
-        
+        let console_layer = ConsoleLayer::builder()
+            .retention(Duration::from_secs(30))
+            .spawn();
 
-    let console_layer = ConsoleLayer::builder()
-        .retention(Duration::from_secs(30))
-        .spawn();
+        let (non_blocking_writer, _guard) = tracing_appender::non_blocking(std::io::stderr());
+        let env_filter = EnvFilter::builder()
+            .with_default_directive(Level::INFO.into())
+            .from_env_lossy();
+        let stderr_layer = tracing_subscriber::fmt::layer()
+            .compact()
+            .with_writer(non_blocking_writer)
+            .with_filter(env_filter);
 
-    let (non_blocking_writer, _guard) = tracing_appender::non_blocking(std::io::stderr());
-    let env_filter = EnvFilter::builder()
-        .with_default_directive(Level::INFO.into())
-        .from_env_lossy();
-    let stderr_layer = tracing_subscriber::fmt::layer()
-        .compact()
-        .with_writer(non_blocking_writer)
-        .with_filter(env_filter);
-
-
-    tracing_subscriber::registry()
-        .with(console_layer)
-        .with(stderr_layer)
-        .init();
+        tracing_subscriber::registry()
+            .with(console_layer)
+            .with(stderr_layer)
+            .init();
     }
 
     #[cfg(not(feature = "tokio_console"))]
     tracing_subscriber::FmtSubscriber::new().init();
 
-    let rt=tokio::runtime::Builder::new_multi_thread()
+    let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_io()
         .enable_time()
         .build()
         .context(RuntimeCreationSnafu {})?;
 
-    let handle=rt.handle().clone();
+    let handle = rt.handle().clone();
 
     rt.block_on(run_inner(options, handle))
 }
@@ -88,11 +87,11 @@ async fn run_inner(options: StartOptions, handle: Handle) -> Result<(), ServerEr
 
     let cancel_token = CancellationToken::new();
 
-    let cloned_cancel_token=cancel_token.clone();
+    let cloned_cancel_token = cancel_token.clone();
 
     let mut player_tasks = JoinSet::new();
 
-    let cloned_handle=handle.clone();
+    let cloned_handle = handle.clone();
 
     //TODO: make tcp connection accepting optionally silently fail
     tokio::spawn(cancel_able(cancel_token.clone(), async move {
@@ -102,20 +101,24 @@ async fn run_inner(options: StartOptions, handle: Handle) -> Result<(), ServerEr
 
         eprintln!("listening at {}", listener.local_addr().unwrap());
 
-
         loop {
             /////
             // tmp, just to make it work
-        let (out_event_tx, out_event_rx) = mpsc::channel(100);
+            let (out_event_tx, out_event_rx) = mpsc::channel(100);
 
-        let (in_event_tx, in_event_rx) = mpsc::channel(100);
-        ////
+            let (in_event_tx, in_event_rx) = mpsc::channel(100);
+            ////
 
-        
             let (conn, socket_addr) = listener.accept().await.context(TcpConnectSnafu {})?;
             eprintln!("accepted tcp connection at {}", socket_addr.ip());
             //TODO: player id association
-            player_tasks.spawn(player_task(handle.clone(), cloned_cancel_token.clone(), conn, out_event_tx, in_event_rx));
+            player_tasks.spawn(player_task(
+                handle.clone(),
+                cloned_cancel_token.clone(),
+                conn,
+                out_event_tx,
+                in_event_rx,
+            ));
         }
     }))
     .await
