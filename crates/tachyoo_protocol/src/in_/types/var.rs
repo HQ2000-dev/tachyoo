@@ -7,7 +7,6 @@ pub mod int {
 
         use leb128::read::Error;
         use tokio::{io::AsyncReadExt, task::block_in_place};
-        use tokio_util::io::SyncIoBridge;
 
         use crate::in_::types::Int;
 
@@ -39,7 +38,6 @@ pub mod int {
 
         use leb128::read::Error;
         use tokio::{io::AsyncReadExt, task::block_in_place};
-        use tokio_util::io::SyncIoBridge;
 
         use crate::in_::types::UInt;
 
@@ -74,7 +72,6 @@ pub mod long {
 
         use leb128::read::Error;
         use tokio::{io::AsyncReadExt, task::block_in_place};
-        use tokio_util::io::SyncIoBridge;
 
         use crate::in_::types::{Long, UInt};
 
@@ -106,7 +103,6 @@ pub mod long {
 
         use leb128::read::Error;
         use tokio::{io::AsyncReadExt, task::block_in_place};
-        use tokio_util::io::SyncIoBridge;
 
         use crate::in_::types::ULong;
 
