@@ -1,24 +1,20 @@
 pub mod event_in;
 pub mod event_out;
 
-use std::convert::Infallible;
 
 use tachyoo_protocol::in_::{ProtocolParser, packets::Packet as InPacket};
 use tachyoo_protocol::out::packet::Packet as OutPacket;
-use tokio::io::AsyncReadExt;
+use tachyoo_protocol::stage::ProtocolStage;
 use tokio::runtime::Handle;
 use tokio::task::JoinSet;
 use tokio::{
     net::TcpStream,
-    select, spawn,
-    sync::{broadcast, mpsc, watch},
+
+    sync::{mpsc, watch},
 };
 use tokio_util::sync::CancellationToken;
-use tracing::info;
 
 use crate::data::Data;
-use crate::player_data::{self, ClientData};
-use crate::player_task::event_out::PlayerOutEvent::Packet;
 use crate::{
     error::ServerError,
     player_task::{event_in::PlayerInEvent, event_out::PlayerOutEvent},
@@ -63,19 +59,24 @@ pub async fn player_task(
         }
     })).await.unwrap();*/
 
-    //let (packet_read_tx, mut packet_read_rx) = mpsc::channel(999);
+    //TODO: maybe just an atomic?
+    let (protocol_stage_tx, mut protocol_stage_rx) = watch::channel(ProtocolStage::default());
 
     let mut parser = ProtocolParser::new();
 
     //same here
     local_join_set.spawn(cancel_able(cancel_token.child_token(), async move {
         eprintln!("prepared reading packets");
+        let mut protocol_stage=ProtocolStage::default();
         loop {
+            if protocol_stage_rx.has_changed().unwrap() {
+                protocol_stage=protocol_stage_rx.borrow_and_update().clone();
+            }
             msg_tx
                 .send(
                     PlayerEvent::Packet(
                         parser
-                            .parse_packet(&mut conn_read)
+                            .parse_packet(&mut conn_read, &protocol_stage)
                             .await
                             .expect("TODO: proper io error (especially unexpected eof) handling!"),
                     ), /*PlayerEvent::ReceivedData({
@@ -103,14 +104,16 @@ pub async fn player_task(
         //TODO: make steps before play state more types safe
         eprintln!("started main player loop");
 
-        let data = Data::new();
+        let mut data = Data::new();
 
         loop {
             match msg_rx.recv().await.expect("channel closed (todo)") {
                 PlayerEvent::Packet(packet) => match packet {
                     InPacket::Handshake(handshake) => {
                         eprintln!("received handshake ");
+                        eprintln!("{:?}", handshake);
                         data.conn.handshake_complete(&handshake);
+                        protocol_stage_tx.send(data.conn.stage.clone()).unwrap();
                     }
                     _ => todo!(),
                 },

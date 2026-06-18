@@ -2,37 +2,28 @@ use tachyoo_protocol::in_::{
     packets::Compression,
     types::handshake::{Handshake, Intent},
 };
+use tachyoo_protocol::stage::ProtocolStage;
 
 pub struct ConnectionState {
     pub compression: Compression,
-    pub state: ProtocolState,
+    pub stage: ProtocolStage,
 }
 
 impl ConnectionState {
     pub fn new() -> ConnectionState {
         ConnectionState {
             compression: Compression::default(),
-            state: ProtocolState::default(),
+            stage: ProtocolStage::default(),
         }
     }
 
     //TODO: maybe a newtype? and just register player after logn?
     pub fn handshake_complete(&mut self, handshake: &Handshake) {
-        assert!(self.state, ProtocolState::Handshake);
+        assert_eq!(self.stage, ProtocolStage::Handshake);
         match handshake.intent {
-            Intent::Status => self.state = ProtocolState::Status,
-            Intent::Login => self.state = ProtocolState::Login,
+            Intent::Status => self.stage = ProtocolStage::Status,
+            Intent::Login => self.stage = ProtocolStage::Login,
             Intent::Transfer => todo!("implement transfer handling"),
         }
     }
-}
-
-#[derive(Default, Debug)]
-pub enum ProtocolState {
-    #[default]
-    Handshake,
-    Status,
-    Login,
-    Config,
-    Play,
 }

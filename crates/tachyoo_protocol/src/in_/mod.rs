@@ -7,22 +7,19 @@ use std::io::{self, Read};
 use bytes::{BufMut, BytesMut};
 use tokio::{io::AsyncReadExt, task::block_in_place};
 
-use crate::{
-    in_::{
+use crate::{in_::{
         packets::{Compression, Packet},
         types::{
-            handshake::parse_handshake,
+            handshake::{Intent, parse_handshake},
             var::int::{signed::parse_var_int, unsigned::parse_var_uint},
         },
-    },
-    state::ProtocolStage,
-};
+    }, };
+use crate::stage::ProtocolStage;
 
 //TODO: try out making it generic over the stage
 #[derive(Debug)]
 pub struct ProtocolParser {
     buffer: BytesMut,
-    stage: ProtocolStage,
     compression: Compression,
 }
 
@@ -30,18 +27,14 @@ impl ProtocolParser {
     pub fn new() -> ProtocolParser {
         ProtocolParser {
             buffer: BytesMut::new(),
-            stage: ProtocolStage::default(),
             compression: Compression::default(),
         }
-    }
-
-    pub fn set_stage(&mut self, new_stage: ProtocolStage) {
-        self.stage = new_stage;
     }
 
     pub async fn parse_packet<R: AsyncReadExt + Unpin>(
         &mut self,
         reader: &mut R,
+        proto_stage: &ProtocolStage,
     ) -> io::Result<Packet> {
         let (packet_len, len_of_packet_len) = parse_var_int(reader).await?;
 
@@ -68,7 +61,7 @@ impl ProtocolParser {
             todo!("compressed packets")
         } else {
             //no truncating cast, nonnegative
-            self.parse_packet_inner(reader, packet_len as usize - id_len, id)
+            self.parse_packet_inner(reader, packet_len as usize - id_len, id, proto_stage)
                 .await
         }
     }
@@ -78,8 +71,9 @@ impl ProtocolParser {
         reader: &mut R,
         len: usize,
         id: i32,
+        proto_stage: &ProtocolStage,
     ) -> io::Result<Packet> {
-        Ok(match self.stage {
+        Ok(match proto_stage {
             ProtocolStage::Handshake => match id {
                 0 => Packet::Handshake(parse_handshake(reader, len).await?),
                 id @ i32::MIN.. => todo!("invalid packet id for handshake: {id}"),

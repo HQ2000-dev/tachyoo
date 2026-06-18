@@ -6,7 +6,7 @@ pub struct ClientId(u32);
 static NEXT_ID: AtomicU32 = AtomicU32::new(0);
 
 impl ClientId {
-    pub fn new() -> ClienId {
+    pub fn new() -> ClientId {
         ClientId(NEXT_ID.fetch_add(1, Ordering::Relaxed))
     }
 }
