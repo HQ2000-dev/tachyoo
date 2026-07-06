@@ -1,7 +1,6 @@
 pub mod event_in;
 pub mod event_out;
 
-
 use tachyoo_protocol::in_::{ProtocolParser, packets::Packet as InPacket};
 use tachyoo_protocol::out::packet::Packet as OutPacket;
 use tachyoo_protocol::stage::ProtocolStage;
@@ -9,12 +8,12 @@ use tokio::runtime::Handle;
 use tokio::task::JoinSet;
 use tokio::{
     net::TcpStream,
-
     sync::{mpsc, watch},
 };
 use tokio_util::sync::CancellationToken;
 
 use crate::data::Data;
+use crate::util::DebugReader;
 use crate::{
     error::ServerError,
     player_task::{event_in::PlayerInEvent, event_out::PlayerOutEvent},
@@ -31,6 +30,7 @@ pub enum PlayerEvent {
 
 //TODO: use try_read/write to detect if the stream was closed
 //TODO: self-cancelling
+// TODO: separate task for status/login/play?
 pub async fn player_task(
     handle: Handle,
     cancel_token: CancellationToken,
@@ -62,21 +62,21 @@ pub async fn player_task(
     //TODO: maybe just an atomic?
     let (protocol_stage_tx, mut protocol_stage_rx) = watch::channel(ProtocolStage::default());
 
-    let mut parser = ProtocolParser::new();
 
     //same here
     local_join_set.spawn(cancel_able(cancel_token.child_token(), async move {
         eprintln!("prepared reading packets");
-        let mut protocol_stage=ProtocolStage::default();
+
+        let mut parser = ProtocolParser::new();
+        let mut stage=parser.stage().clone();
+        
         loop {
-            if protocol_stage_rx.has_changed().unwrap() {
-                protocol_stage=protocol_stage_rx.borrow_and_update().clone();
-            }
+            dbg!(&stage);
             msg_tx
                 .send(
                     PlayerEvent::Packet(
                         parser
-                            .parse_packet(&mut conn_read, &protocol_stage)
+                            .parse_packet(&mut DebugReader(&mut conn_read))
                             .await
                             .expect("TODO: proper io error (especially unexpected eof) handling!"),
                     ), /*PlayerEvent::ReceivedData({
@@ -87,6 +87,7 @@ pub async fn player_task(
                 )
                 .await
                 .unwrap();
+            
         }
     }));
     //.await.unwrap()?;
@@ -104,6 +105,7 @@ pub async fn player_task(
         //TODO: make steps before play state more types safe
         eprintln!("started main player loop");
 
+        //TODO: synchronize protocol stages
         let mut data = Data::new();
 
         loop {
@@ -112,8 +114,11 @@ pub async fn player_task(
                     InPacket::Handshake(handshake) => {
                         eprintln!("received handshake ");
                         eprintln!("{:?}", handshake);
-                        data.conn.handshake_complete(&handshake);
-                        protocol_stage_tx.send(data.conn.stage.clone()).unwrap();
+                        //data.conn.handshake_complete(&handshake);
+                        //protocol_stage_tx.send(data.conn.stage.clone()).unwrap();
+                    }
+                    InPacket::Status(status) => {
+                        dbg!(status);
                     }
                     _ => todo!(),
                 },
@@ -124,7 +129,9 @@ pub async fn player_task(
 
     //TODO: better solution
     for result in local_join_set.join_next().await.unwrap() {
-        result?;
+        if let error @ Err(_) = result {
+            return error;
+        }
     }
     Ok(())
 }

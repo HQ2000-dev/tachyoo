@@ -1,6 +1,10 @@
 use std::{convert::Infallible, pin::Pin, task::Poll};
 
-use tokio::{io::{AsyncRead, AsyncReadExt}, pin, select, sync::watch};
+use tokio::{
+    io::{AsyncRead, AsyncReadExt},
+    pin, select,
+    sync::watch,
+};
 use tokio_util::sync::CancellationToken;
 
 use crate::ShutdownMsg;
