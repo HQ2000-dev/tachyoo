@@ -10,12 +10,11 @@ pub struct McString<const MAX_LEN: u16> {
     data: Box<str>,
 }
 
-//TODO: move inside the module again?
 
 impl<const MAX_LEN: u16> McString<MAX_LEN> {
     const __ASSERTION: () = assert!(MAX_LEN <= ABSOLUTE_MAX_LEN);
 
-    fn new(bytes: &[u8]) -> Result<McString<MAX_LEN>, McStringError> {
+    pub fn new(bytes: &[u8]) -> Result<McString<MAX_LEN>, McStringError> {
         let str = str::from_utf8(bytes).map_err(McStringError::InvalidUtf8)?;
 
         let (valid, len) = crate::util::string::is_valid_and_len::<MAX_LEN>(str);
@@ -39,6 +38,12 @@ impl<const MAX_LEN: u16> McString<MAX_LEN> {
         //TODO: I think this could be avoided via a type-safe wrapper around str
         //McString has the same invariant as McString
         McStr::<'_, MAX_LEN>::from_str_unchecked(&self.data)
+    }
+
+    pub const fn check_validity() {}
+
+    pub const fn is_len_valid(len: i32) -> bool {
+        MAX_LEN as i64 <= len as i64
     }
 }
 

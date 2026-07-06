@@ -1,5 +1,6 @@
 pub mod str;
 pub mod string;
+pub mod parse;
 
 use std::str::Utf8Error;
 
@@ -9,3 +10,4 @@ pub enum McStringError {
     InvalidUtf8(Utf8Error),
     TooLong { len: u16 },
 }
+
