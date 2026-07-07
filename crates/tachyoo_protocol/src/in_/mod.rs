@@ -8,11 +8,8 @@ use bytes::{BufMut, BytesMut};
 use tokio::{io::AsyncReadExt, task::block_in_place};
 
 use crate::in_::{
-    packets::{Compression, Login, Packet, Status},
-    types::{
-        handshake::{Intent, parse_handshake},
-        status::parse_ping_request,
-        var::int::{signed::parse_var_int, unsigned::parse_var_uint},
+    packets::{Compression, Login, Packet, Status}, types::{
+        handshake::{Intent, parse_handshake}, login::{hello::parse_hello, key::parse_key}, status::parse_ping_request, var::int::{signed::parse_var_int, unsigned::parse_var_uint},
     },
 };
 use crate::stage::ProtocolStage;
@@ -90,15 +87,19 @@ impl ProtocolParser {
                     };
                     Packet::Handshake(handshake)
                 }
-                id @ i32::MIN.. => todo!("invalid packet id for handshake: {id}"),
+                id @ i32::MIN.. => panic!("invalid packet id for handshake: {id}"),
             },
             ProtocolStage::Status => match id {
                 0 => Packet::Status(Status::StatusRequest),
                 1 => Packet::Status(Status::PingRequest(parse_ping_request(reader).await?)),
-                id @ i32::MIN.. => todo!("invalid packet id for status: {id}"),
+                id @ i32::MIN.. => panic!("invalid packet id for status: {id}"),
             },
             ProtocolStage::Login => match id {
-                0 => Packet::Login(),
+                0 => Packet::Login(Login::Hello(parse_hello(reader, len).await?)),
+                1 => Packet::Login(Login::Key(parse_key(reader).await?)),
+                2 => unimplemented!("custom queries"),
+                3 => Packet::Login(Login::Hello(parse_hello(reader, len).await?)),
+                _ => panic!("invalid login packet id")
             },
             ProtocolStage::Config => todo!(),
             ProtocolStage::Play => todo!(),
