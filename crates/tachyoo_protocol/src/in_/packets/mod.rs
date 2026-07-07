@@ -3,10 +3,9 @@ pub mod raw;
 
 use std::default;
 
-use crate::in_::{
-    packets::play::Play,
-    types::{Long, handshake::Handshake},
-};
+use crate::{in_::{
+    packets::play::Play, types::{Long, handshake::Handshake, login::hello::Hello, status::PingRequest, string::string::McString},
+}, out::types::UUID};
 
 #[derive(Default, Debug)]
 pub enum Compression {
@@ -20,7 +19,7 @@ pub enum Compression {
 const _: () = {
     //we don't want the enum to get too big
     // TODO: consider boxing bigger variants or dynamic dispatch
-    assert!(size_of::<Packet>() < 45);
+    assert!(size_of::<Packet>() < 50);
 };
 
 #[derive(Debug)]
@@ -33,36 +32,36 @@ pub enum Packet {
 }
 
 #[derive(Debug)]
-
 pub enum Status {
     //0
     StatusRequest,
     //1
-    PingRequest { timestamp: Long },
+    PingRequest(PingRequest),
 }
 
 impl Status {
     pub const fn protocol_id(&self) -> u8 {
         match self {
             Self::StatusRequest => 0x00,
-            Self::PingRequest { .. } => 0x01,
+            Self::PingRequest(_) => 0x01,
         }
     }
 }
 
 #[derive(Debug)]
 pub enum Login {
-    Hello = 0,
-    Key = 1,
-    CustomQueryAnswer = 2,
-    LoginAcknowledged = 3,
-    CookieResponse = 4,
+    //0
+    Hello(Hello),
+    Key(Key),
+    CustomQueryAnswer ,
+    LoginAcknowledged ,
+    CookieResponse ,
 }
 
 impl Login {
     pub const fn protocol_id(&self) -> u8 {
         match self {
-            Self::Hello => 0,
+            Self::Hello(_) => 0,
             Self::Key => 1,
             Self::CustomQueryAnswer => 2,
             Self::LoginAcknowledged => 3,

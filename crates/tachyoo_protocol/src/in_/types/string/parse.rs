@@ -4,9 +4,17 @@ use tokio::io::AsyncReadExt;
 
 use crate::in_::types::{string::{McStringError, str::McStr, string::McString}, var::int::signed::parse_var_int};
 
+//TODO: convert to anyhow?
 pub enum McStringParseError {
     Io(io::Error),
     McStringError(McStringError),
+}
+
+pub fn unwrap_mc_string_parse_error(err: McStringParseError) -> io::Error {
+    match err {
+        McStringParseError::Io(e) =>  e,
+        McStringParseError::McStringError(e) => Err(e).unwrap(),
+    }
 }
 
 pub async fn parse_mc_string<R: AsyncReadExt + Unpin, const MAX_LEN: u16>(

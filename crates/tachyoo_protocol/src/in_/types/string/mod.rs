@@ -10,4 +10,3 @@ pub enum McStringError {
     InvalidUtf8(Utf8Error),
     TooLong { len: u16 },
 }
-
