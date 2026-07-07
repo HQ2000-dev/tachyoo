@@ -62,14 +62,13 @@ pub async fn player_task(
     //TODO: maybe just an atomic?
     let (protocol_stage_tx, mut protocol_stage_rx) = watch::channel(ProtocolStage::default());
 
-
     //same here
     local_join_set.spawn(cancel_able(cancel_token.child_token(), async move {
         eprintln!("prepared reading packets");
 
         let mut parser = ProtocolParser::new();
-        let mut stage=parser.stage().clone();
-        
+        let mut stage = parser.stage().clone();
+
         loop {
             dbg!(&stage);
             msg_tx
@@ -87,7 +86,6 @@ pub async fn player_task(
                 )
                 .await
                 .unwrap();
-            
         }
     }));
     //.await.unwrap()?;

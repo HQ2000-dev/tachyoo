@@ -3,11 +3,12 @@ use std::io;
 use tokio::io::AsyncReadExt;
 
 pub mod handshake;
+pub mod login;
 pub mod server_addr;
+pub mod status;
 pub mod string;
 pub mod var;
-pub mod status;
-pub mod login;
+pub mod array;
 
 pub type Long = i64;
 

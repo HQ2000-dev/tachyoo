@@ -1,6 +1,6 @@
+pub mod parse;
 pub mod str;
 pub mod string;
-pub mod parse;
 
 use std::str::Utf8Error;
 

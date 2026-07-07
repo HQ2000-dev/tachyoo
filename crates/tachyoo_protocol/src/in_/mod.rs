@@ -8,7 +8,8 @@ use bytes::{BufMut, BytesMut};
 use tokio::{io::AsyncReadExt, task::block_in_place};
 
 use crate::in_::{
-    packets::{Compression, Login, Packet, Status}, types::{
+    packets::{Compression, Login, Packet, Status},
+    types::{
         handshake::{Intent, parse_handshake},
         status::parse_ping_request,
         var::int::{signed::parse_var_int, unsigned::parse_var_uint},
@@ -97,7 +98,7 @@ impl ProtocolParser {
                 id @ i32::MIN.. => todo!("invalid packet id for status: {id}"),
             },
             ProtocolStage::Login => match id {
-                0 => Packet::Login()
+                0 => Packet::Login(),
             },
             ProtocolStage::Config => todo!(),
             ProtocolStage::Play => todo!(),
@@ -105,9 +106,14 @@ impl ProtocolParser {
     }
 }
 
-
+/*
 pub trait Parseable: Sized {
+    //TODO: associated type defaults
     type Err;
-    
-    async fn parse<R: AsyncReadExt + Unpin>(reader: &mut R, len: usize) -> Result<Self, <Self as Parseable>::Err>;
+
+    async fn parse<R: AsyncReadExt + Unpin>(
+        reader: &mut R,
+        len: usize,
+    ) -> Result<Self, <Self as Parseable>::Err>;
 }
+*/

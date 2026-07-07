@@ -10,7 +10,6 @@ pub struct McString<const MAX_LEN: u16> {
     data: Box<str>,
 }
 
-
 impl<const MAX_LEN: u16> McString<MAX_LEN> {
     const __ASSERTION: () = assert!(MAX_LEN <= ABSOLUTE_MAX_LEN);
 

@@ -13,6 +13,6 @@ pub struct PingRequest {
 pub async fn parse_ping_request<R: AsyncReadExt + Unpin>(
     reader: &mut R,
 ) -> io::Result<PingRequest> {
-    let timestamp=parse_long(reader).await?;
+    let timestamp = parse_long(reader).await?;
     Ok(PingRequest { timestamp })
 }
