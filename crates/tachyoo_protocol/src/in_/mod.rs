@@ -77,7 +77,8 @@ impl ProtocolParser {
         len: usize,
         id: i32,
     ) -> io::Result<Packet> {
-        Ok(match self.stage {
+        
+        let packet=match self.stage {
             ProtocolStage::Handshake => match id {
                 0 => {
                     let handshake = parse_handshake(reader, len).await?;
@@ -103,7 +104,10 @@ impl ProtocolParser {
             },
             ProtocolStage::Config => todo!(),
             ProtocolStage::Play => todo!(),
-        })
+        };
+
+        dbg!(&id, &self.stage, &packet);
+        Ok(packet)
     }
 }
 
