@@ -109,8 +109,8 @@ async fn run_inner(options: StartOptions, handle: Handle) -> Result<(), ServerEr
             let (in_event_tx, in_event_rx) = mpsc::channel(100);
             ////
 
-            let (conn, socket_addr) = listener.accept().await.context(TcpConnectSnafu {})?;
-            eprintln!("accepted tcp connection at {}", socket_addr.ip());
+            let (conn, peer_addr) = listener.accept().await.context(TcpConnectSnafu {})?;
+            eprintln!("accepted tcp connection - peer: {}", peer_addr.ip());
             //TODO: player id association
             player_tasks.spawn(player_task(
                 handle.clone(),
