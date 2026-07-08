@@ -98,7 +98,7 @@ async fn run_inner(options: StartOptions, handle: Handle) -> Result<(), ServerEr
         let listener = TcpListener::bind((Ipv6Addr::LOCALHOST, options.port))
             .await
             .context(TcpBindSnafu {})?;
-
+        //enforce only one status/status-play each at a time! (TODO)
         eprintln!("listening at {}", listener.local_addr().unwrap());
 
         loop {
