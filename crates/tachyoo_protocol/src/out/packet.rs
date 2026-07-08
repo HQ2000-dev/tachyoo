@@ -3,7 +3,7 @@ use std::{io::Write, marker::PhantomData};
 use flate2::{Compress, write::ZlibEncoder};
 use tokio::io::AsyncWriteExt;
 
-use crate::out::{Transfer, types::var::int::VarInt};
+use crate::out::{Packet, TranferablePacket, Transfer, TransferablePacket, types::var::int::VarInt};
 
 //having the binary data as an input? (TODO)
 //maybe still a non-raw version for compresion handling? or just bytes?
@@ -48,10 +48,8 @@ impl<T> Compressed<T> where T: Transfer {
     }
 }*/
 
-impl<T: Transfer> Packet<T> {
-    pub async fn new(id: i32, transfer: T, compression: Compression) -> Packet<T>
-    where
-        T: Transfer,
+impl<T: TransferablePacket> Packet<T> {
+    pub fn with_compression(transfer: T, compression: Compression) -> Packet<T>
     {
         let mut data = transfer.data();
 
@@ -69,15 +67,15 @@ impl<T: Transfer> Packet<T> {
         } else {
             Packet::Uncompressed {
                 len: VarInt::new(data.len() as i32),
-                id: VarInt::new(id),
+                id: VarInt::new(<T as TranferablePacket>::ID),
                 data,
                 phantom: PhantomData,
             }
         }
     }
 
-    pub async fn new_uncompressed(id: i32, transfer: T) -> Packet<T> {
-        Packet::new(id, transfer, Compression::Uncompressed).await
+    pub fn new(transfer: T) -> Packet<T> {
+        Packet::with_compression(transfer, Compression::Uncompressed).await
     }
 
     pub async fn send(&self, mut stream: tokio::net::TcpStream) -> tokio::io::Result<()> {

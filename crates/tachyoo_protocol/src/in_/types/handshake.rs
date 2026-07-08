@@ -2,7 +2,7 @@ use std::{convert::Infallible, io};
 
 use tokio::io::AsyncReadExt;
 
-use crate::in_::{Parseable, types::{
+use crate::in_::{types::{
     Int, UShort, parse_ushort,
     server_addr::{ServerAddr, parse_server_addr},
     var::{int::signed::parse_var_int, long::unsigned::parse_var_ulong},

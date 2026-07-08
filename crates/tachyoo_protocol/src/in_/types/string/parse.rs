@@ -28,7 +28,7 @@ pub async fn parse_mc_string<R: AsyncReadExt + Unpin, const MAX_LEN: u16>(
         .await
         .map_err(McStringParseError::Io)?;
 
-    assert!(McString::<MAX_LEN>::is_len_valid(string_len));
+    assert!(McString::<MAX_LEN>::max_valid_len() as usize <= len);
 
     //assert_eq!()
 

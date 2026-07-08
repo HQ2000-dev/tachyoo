@@ -41,8 +41,8 @@ impl<const MAX_LEN: u16> McString<MAX_LEN> {
 
     pub const fn check_validity() {}
 
-    pub const fn is_len_valid(len: i32) -> bool {
-        MAX_LEN as i64 <= len as i64
+    pub const fn max_valid_len() -> u16 {
+        MAX_LEN
     }
 }
 

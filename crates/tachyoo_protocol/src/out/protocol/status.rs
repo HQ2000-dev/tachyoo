@@ -3,6 +3,7 @@ use serde_json::{Map, Value, json};
 use crate::{
     constants::{PROTOCOL_VERSION, STRING_VERSION},
     out::{
+        TransferablePacket,
         Transfer,
         packet::Packet,
         types::{UUID, string::McString},
@@ -35,8 +36,8 @@ use crate::{
     "favicon": "data:image/png;base64,<data>",
     "enforcesSecureChat": false
 ]));*/
-
-pub fn status_response(/*players_max: u32, players_online: u32, player_samples: Option<&[UUID]>*/)
+impl StatusResponse {
+pub fn new(/*players_max: u32, players_online: u32, player_samples: Option<&[UUID]>*/)
  -> StatusResponse {
     let json = json!({
         "version": {
@@ -64,6 +65,7 @@ pub fn status_response(/*players_max: u32, players_online: u32, player_samples: 
         data: McString::try_from(json.to_string()).unwrap(),
     }
 }
+}
 
 pub struct StatusResponse {
     //TODO: replace with unlimited length mc string
@@ -74,4 +76,9 @@ impl Transfer for StatusResponse {
     fn write_bytes(&self, buf: &mut crate::out::Buffer) {
         self.data.write_bytes(buf);
     }
+}
+
+//TODO: derive macro
+impl TransferablePacket for StatusResponse {
+    const ID: i32=0;
 }

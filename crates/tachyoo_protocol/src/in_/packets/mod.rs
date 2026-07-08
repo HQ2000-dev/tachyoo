@@ -5,13 +5,10 @@ use std::default;
 
 use crate::{
     in_::{
-        packets::play::Play,
-        types::{
-            Long, handshake::Handshake, login::hello::Hello, status::PingRequest,
-            string::string::McString,
+        packets::play::Play, types::{
+            Long, handshake::Handshake, login::{hello::Hello, key::Key}, status::PingRequest, string::string::McString,
         },
-    },
-    out::types::UUID,
+    }, out::types::UUID,
 };
 
 #[derive(Default, Debug)]
@@ -59,9 +56,15 @@ impl Status {
 pub enum Login {
     //0
     Hello(Hello),
+    //1
     Key(Key),
+    //2
+    //unimportant for now (TODO)
     CustomQueryAnswer,
+    //3
+    // no fields
     LoginAcknowledged,
+    //TODO - all states?
     CookieResponse,
 }
 
@@ -69,7 +72,7 @@ impl Login {
     pub const fn protocol_id(&self) -> u8 {
         match self {
             Self::Hello(_) => 0,
-            Self::Key => 1,
+            Self::Key(_) => 1,
             Self::CustomQueryAnswer => 2,
             Self::LoginAcknowledged => 3,
             Self::CookieResponse => 4,

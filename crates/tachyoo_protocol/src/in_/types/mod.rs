@@ -22,6 +22,13 @@ pub type UShort = u16;
 
 pub type UUID = u128;
 
+pub type Byte=u8;
+
+pub async fn parse_byte<R: AsyncReadExt + Unpin>(reader: &mut R) -> io::Result<Byte> {
+    let byte=reader.read_u8().await?.to_le();
+    Ok(byte)
+}
+
 pub async fn parse_ushort<R: AsyncReadExt + Unpin>(reader: &mut R) -> io::Result<UShort> {
     let ushort = reader.read_u16().await?.to_le();
     Ok(ushort)

@@ -62,3 +62,7 @@ macro_rules! impl_transfer {
 
 variadics_please::all_tuples!(impl_transfer, 1, 15, T);
 */
+
+pub trait TransferablePacket: Transfer {
+    const ID: i32;
+}
