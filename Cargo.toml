@@ -1,6 +1,15 @@
 [workspace]
 resolver="3"
-members = ["crates/leb128_async","crates/tachyoo","crates/tachyoo_cli", "crates/tachyoo_data", "crates/tachyoo_plugin","crates/tachyoo_protocol", "crates/tachyoo_world", "crates/tachyoo_plugin_api"]
+members = [
+    "crates/leb128_async",
+    "crates/tachyoo",
+    "crates/tachyoo_cli",
+    "crates/tachyoo_data",
+    "crates/tachyoo_plugin",
+    "crates/tachyoo_protocol",
+    "crates/tachyoo_world",
+    "crates/tachyoo_plugin_api"
+]
 
 [workspace.dependencies]
 bevy_ecs = {version="0.18.1", default-features=false}
