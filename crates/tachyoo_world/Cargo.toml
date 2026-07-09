@@ -10,3 +10,4 @@ dev=[]
 [dependencies]
 # TODO: determine features
 bevy_ecs= { workspace=true, default-features=false, features=["multi_threaded"] }
+tracing.workspace=true
