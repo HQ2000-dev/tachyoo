@@ -3,7 +3,7 @@ use std::{io::Write, marker::PhantomData};
 use flate2::{Compress, write::ZlibEncoder};
 use tokio::io::AsyncWriteExt;
 
-use crate::out::{Packet, TranferablePacket, Transfer, TransferablePacket, types::var::int::VarInt};
+use crate::out::{Transfer, TransferablePacket, types::var::int::VarInt};
 
 //having the binary data as an input? (TODO)
 //maybe still a non-raw version for compresion handling? or just bytes?
@@ -14,13 +14,13 @@ pub enum Packet<T> {
         id: VarInt,
         //TODO: tmp
         data: Box<[u8]>,
-        phantom: PhantomData<T>,
+        _phantom: PhantomData<T>,
     },
     Compressed {
         len: VarInt,
         //TODO: tmp
         data: Box<[u8]>,
-        phantom: PhantomData<(T, VarInt)>,
+        _phantom: PhantomData<(T, VarInt)>,
     },
 }
 
@@ -62,36 +62,36 @@ impl<T: TransferablePacket> Packet<T> {
             Packet::Compressed {
                 len: VarInt::new(data.len() as i32),
                 data,
-                phantom: PhantomData,
+                _phantom: PhantomData,
             }
         } else {
             Packet::Uncompressed {
                 len: VarInt::new(data.len() as i32),
-                id: VarInt::new(<T as TranferablePacket>::ID),
+                id: VarInt::new(<T as TransferablePacket>::ID),
                 data,
-                phantom: PhantomData,
+                _phantom: PhantomData,
             }
         }
     }
 
     pub fn new(transfer: T) -> Packet<T> {
-        Packet::with_compression(transfer, Compression::Uncompressed).await
+        Packet::with_compression(transfer, Compression::Uncompressed)
     }
 
-    pub async fn send(&self, mut stream: tokio::net::TcpStream) -> tokio::io::Result<()> {
+    pub async fn send<R: AsyncWriteExt + Unpin>(&self, mut writer: &mut R) -> tokio::io::Result<()> {
         match self {
-            Packet::Compressed { len, data, phantom } => {
-                stream.write_all(&len.data()).await?;
-                stream.write_all(&data).await
+            Packet::Compressed { len, data, _phantom } => {
+                writer.write_all(&len.data()).await?;
+                writer.write_all(&data).await
             }
             Packet::Uncompressed {
                 len,
                 id,
                 data,
-                phantom,
+                _phantom,
             } => {
-                stream.write_all(&len.data()).await?;
-                stream.write_all(&data).await
+                writer.write_all(&len.data()).await?;
+                writer.write_all(&data).await
             }
         }
     }
