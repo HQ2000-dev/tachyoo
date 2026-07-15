@@ -9,7 +9,7 @@ members = [
     "crates/tachyoo_protocol",
     "crates/tachyoo_world",
     "crates/tachyoo_plugin_api"
-]
+, "crates/tachyoo_packet_viewer"]
 
 [workspace.dependencies]
 bevy_ecs = {version="0.18.1", default-features=false}

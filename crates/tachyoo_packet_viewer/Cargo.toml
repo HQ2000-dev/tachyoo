@@ -1,0 +1,11 @@
+[package]
+name = "tachyoo_packet_viewer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+eframe = "0.35.0"
+egui = "0.35.0"
+tracing.workspace = true
+
+# web at some point?
