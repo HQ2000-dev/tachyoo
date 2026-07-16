@@ -2,7 +2,6 @@ use std::io::Write;
 
 pub mod packet;
 pub mod packet_ids;
-pub mod protocol;
 pub mod types;
 pub mod packets;
 
