@@ -11,6 +11,8 @@ use crate::{
 };
 use console_subscriber::ConsoleLayer;
 use snafu::prelude::*;
+#[cfg(feature = "packet_viewer")]
+use tachyoo_protocol::{in_::packets::Packet as InPacket, out::packets::Packet as OutPacket};
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, error, info};
 use tracing_subscriber::util::SubscriberInitExt;
@@ -31,7 +33,11 @@ type HashMap<K, V> = rustc_hash::FxHashMap<K, V>;
 
 //TODO maybe use the want crate
 
-pub fn run(options: StartOptions) -> Result<(), ServerError> {
+pub fn run(
+    options: StartOptions,
+    #[cfg(feature = "packet_viewer")] in_tx: flume::Receiver<InPacket>,
+    #[cfg(feature = "packet_viewer")] in_tx: flume::Receiver<OutPacket>,
+) -> Result<(), ServerError> {
     // hopefully sufficient?
     #[cfg(feature = "tokio_console")]
     {
