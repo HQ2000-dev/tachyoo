@@ -2,7 +2,8 @@ use crate::config::WorldConfig;
 use crate::event_queue::EventQueue;
 use crate::events::Event;
 use crate::resources::Ticks;
-use crate::systems::systems;
+use crate::systems::add_systems;
+
 use bevy_ecs::world::World as EcsWorld;
 
 use bevy_ecs::schedule::{Schedule, ScheduleLabel};
@@ -22,7 +23,7 @@ impl World {
         ecs_world.insert_resource(Ticks::default());
 
         let mut tick_schedule = Schedule::new(Tick);
-        tick_schedule.add_systems(systems());
+        add_systems(&mut tick_schedule);
 
         World {
             ecs_world,

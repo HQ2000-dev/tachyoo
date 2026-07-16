@@ -1,10 +1,13 @@
 pub mod event_in;
 pub mod event_out;
 
+use tachyoo_protocol::in_::packets::Status;
 use tachyoo_protocol::in_::{ProtocolParser, packets::Packet as InPacket};
 use tachyoo_protocol::out::packet::Packet as OutPacket;
+use tachyoo_protocol::out::protocol::status::StatusResponse;
 use tachyoo_protocol::stage::ProtocolStage;
 use tokio::runtime::Handle;
+use tokio::sync::Notify;
 use tokio::task::JoinSet;
 use tokio::{
     net::TcpStream,
@@ -22,10 +25,19 @@ use crate::{
 
 #[derive(Debug)]
 pub enum PlayerEvent {
-    Packet(tachyoo_protocol::in_::packets::Packet),
+    Packet{
+        packet: tachyoo_protocol::in_::packets::Packet,
+        next_stage: ProtocolStage,
+    },
     Event(PlayerInEvent),
     #[cfg(feature = "dev")]
     Data(Vec<u8>),
+}
+
+//tmp?
+#[derive(Clone, Debug)]
+pub struct ProtoStageMsg { 
+    state: ProtocolStage, 
 }
 
 //TODO: use try_read/write to detect if the stream was closed
@@ -60,7 +72,9 @@ pub async fn player_task(
     })).await.unwrap();*/
 
     //TODO: maybe just an atomic?
-    let (protocol_stage_tx, mut protocol_stage_rx) = watch::channel(ProtocolStage::default());
+    let (protocol_stage_tx, mut protocol_stage_rx) = mpsc::channel(100);
+
+   
 
     //same here
     local_join_set.spawn(cancel_able(cancel_token.child_token(), async move {
@@ -70,15 +84,15 @@ pub async fn player_task(
         let mut stage = parser.stage().clone();
 
         loop {
-            dbg!(&stage);
             msg_tx
                 .send(
-                    PlayerEvent::Packet(
+                    PlayerEvent::Packet { packet:
                         parser
                             .parse_packet(&mut DebugReader(&mut conn_read))
                             .await
                             .expect("TODO: proper io error (especially unexpected eof) handling!"),
-                    ), /*PlayerEvent::ReceivedData({
+                        next_stage: *parser.stage(),
+                    }, /*PlayerEvent::ReceivedData({
                            let mut buf=Vec::new();
                            conn_read.read_buf(&mut buf).await.unwrap();
                            buf
@@ -95,7 +109,8 @@ pub async fn player_task(
     //maybe blocking on compression via a rt handle??
     local_join_set.spawn(cancel_able(cancel_token.child_token(), async move {
         loop {
-            packet_write_rx.recv().await.unwrap()
+            let packet=packet_write_rx.recv().await.unwrap();
+            packet.send(conn_write).await
         }
     }));
 
@@ -108,15 +123,20 @@ pub async fn player_task(
 
         loop {
             match msg_rx.recv().await.expect("channel closed (todo)") {
-                PlayerEvent::Packet(packet) => match packet {
+                //TODO: proper sync with the parsing task
+                PlayerEvent::Packet { packet, next_stage } => match packet {
                     InPacket::Handshake(handshake) => {
                         eprintln!("received handshake ");
                         eprintln!("{:?}", handshake);
+                        
+                        
                         //data.conn.handshake_complete(&handshake);
                         //protocol_stage_tx.send(data.conn.stage.clone()).unwrap();
                     }
                     InPacket::Status(status) => {
-                        dbg!(status);
+                        match status {
+                            Status::StatusRequest => packet_write_tx.send(OutPacket::new(StatusResponse::new())).await
+                        }
                     }
                     _ => todo!(),
                 },

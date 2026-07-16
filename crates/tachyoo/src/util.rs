@@ -38,7 +38,7 @@ impl<R: AsyncRead + Unpin> AsyncRead for DebugReader<R> {
     ) -> std::task::Poll<std::io::Result<()>> {
         let res = AsyncRead::poll_read(Pin::new(&mut self.0), cx, buf);
         if res.is_ready() {
-            eprintln!("data: {:?}", buf)
+            //eprintln!("data: {:?}", buf)
         }
         res
     }

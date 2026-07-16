@@ -8,7 +8,6 @@ use bevy_ecs::{
 
 use crate::{
     resources::{NextTickTime, Ticks, Tps},
-    world::Tick,
 };
 
 pub(crate) fn add_systems(schedule: &mut Schedule) {
