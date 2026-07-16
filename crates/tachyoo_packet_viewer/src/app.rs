@@ -18,18 +18,19 @@ impl eframe::App for PacketViewerApp {
         if let Ok(out_packet) = self.out_recv.try_recv() {
             self.out_packets.push(out_packet);
         }
-        
-        ui.vertical(
-            |ui| {
-                packet_panel(ui, &mut self.in_packets, 10);
-                packet_panel(ui, &mut self.out_packets, 10);
-            }
-        );
+
+        ui.vertical(|ui| {
+            packet_panel(ui, &mut self.in_packets, 10);
+            packet_panel(ui, &mut self.out_packets, 10);
+        });
     }
 }
 
 impl PacketViewerApp {
-    pub(crate) fn new(in_recv: flume::Receiver<InPacket>, in_recv: flume::Receiver<OutPacket>) -> Self {
+    pub(crate) fn new(
+        in_recv: flume::Receiver<InPacket>,
+        in_recv: flume::Receiver<OutPacket>,
+    ) -> Self {
         Self {
             in_recv,
             out_recv,

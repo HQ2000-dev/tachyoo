@@ -1,7 +1,3 @@
-pub enum Handshake {
-    Intention = 0,
-}
-
 pub enum Status {
     StatusResponse = 0,
     PongResponse = 1,

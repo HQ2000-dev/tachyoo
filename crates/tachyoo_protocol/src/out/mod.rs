@@ -4,6 +4,7 @@ pub mod packet;
 pub mod packet_ids;
 pub mod protocol;
 pub mod types;
+pub mod packets;
 
 //TODO: benchmark write_bytes perf
 // TODO: make Transfer types configs again (maybe) and cache the buffer

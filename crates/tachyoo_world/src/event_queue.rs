@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use bevy_ecs::resource::Resource;
+use bevy_ecs::prelude::*;
 
 use crate::events::Event;
 
@@ -20,6 +20,6 @@ impl EventQueue {
     }
 
     pub(crate) fn new() -> Self {
-        Self(VecDeque::new())
+        Self { inner: VecDeque::new() }
     }
 }
