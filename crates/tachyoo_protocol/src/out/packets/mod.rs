@@ -1,6 +1,6 @@
 pub mod status;
 
-use crate::out::protocol::status::StatusResponse;
+use crate::out::{packets::status::PongResponse, protocol::status::StatusResponse};
 
 pub enum Packet {
     
@@ -9,7 +9,7 @@ pub enum Packet {
 
 pub enum Status {
     StatusResponse(StatusResponse),
-    PongResponse(Pong),
+    PongResponse(PongResponse),
 }
 
 pub enum Login {

@@ -1,12 +1,8 @@
 use serde_json::{Map, Value, json};
 
 use crate::{
-    constants::{PROTOCOL_VERSION, STRING_VERSION},
-    out::{
-        TransferablePacket,
-        Transfer,
-        packet::Packet,
-        types::{UUID, string::McString},
+    constants::{PROTOCOL_VERSION, STRING_VERSION}, out::{
+        Transfer, TransferablePacket, packet::Packet, types::{Long, UUID, string::McString},
     },
 };
 
@@ -78,7 +74,21 @@ impl Transfer for StatusResponse {
     }
 }
 
-//TODO: derive macro
+//TODO: derive macro / macro_rules!
 impl TransferablePacket for StatusResponse {
     const ID: i32=0;
+}
+
+pub struct PongResponse {
+    timestamp: Long,
+}
+
+impl Transfer for PongResponse {
+    fn write_bytes(&self, buf: &mut crate::out::Buffer) {
+        self.timestamp.write_bytes(buf);
+    }
+}
+
+impl TransferablePacket for PongResponse {
+    const ID: i32 = 1;
 }
