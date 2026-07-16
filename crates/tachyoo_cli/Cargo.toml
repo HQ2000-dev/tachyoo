@@ -7,8 +7,14 @@ edition = "2024"
 
 [features]
 tokio-console=[]
+packet_viewer=["tachyoo/packet_viewer", "dep:flume"]
+dev=["packet_viewer", "tachyoo/dev"]
+default=["dev"]
 
 [dependencies]
 tachyoo={ path="../tachyoo" }
+tachyoo_packet_viewer= { path="../tachyoo_packet_viewer" }
 
 snafu.workspace=true
+clap = { version = "4.6.1", features = ["derive"] }
+flume = { workspace = true, optional = true }
