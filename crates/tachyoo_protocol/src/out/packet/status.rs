@@ -1,8 +1,10 @@
 use serde_json::{Map, Value, json};
 
 use crate::{
-    constants::{PROTOCOL_VERSION, STRING_VERSION}, out::{
-        Transfer, TransferablePacket, packet::Packet, types::{Long, UUID, string::McString},
+    constants::{PROTOCOL_VERSION, STRING_VERSION},
+    out::{
+        Transfer, TransferablePacket,
+        types::{Long, UUID, string::McString},
     },
 };
 
@@ -33,36 +35,37 @@ use crate::{
     "enforcesSecureChat": false
 ]));*/
 impl StatusResponse {
-pub fn new(/*players_max: u32, players_online: u32, player_samples: Option<&[UUID]>*/)
- -> StatusResponse {
-    let json = json!({
-        "version": {
-            "name": "1.21.8",
-            "protocol": 772
-        },
-        "players": {
-            "max": 20,
-            "online": 1,
-            "sample": [
-                {
-                    "name": "thinkofdeath",
-                    "id": "4566e69f-c907-48ee-8d71-d7ba5aa00d20"
-                }
-            ]
-        },
-        "description": {
-            "text": "TODO"
-        },
-        "enforcesSecureChat": false
-    }
-    );
+    pub fn new(/*players_max: u32, players_online: u32, player_samples: Option<&[UUID]>*/)
+     -> StatusResponse {
+        let json = json!({
+            "version": {
+                "name": "1.21.8",
+                "protocol": 772
+            },
+            "players": {
+                "max": 20,
+                "online": 1,
+                "sample": [
+                    {
+                        "name": "thinkofdeath",
+                        "id": "4566e69f-c907-48ee-8d71-d7ba5aa00d20"
+                    }
+                ]
+            },
+            "description": {
+                "text": "TODO"
+            },
+            "enforcesSecureChat": false
+        }
+        );
 
-    StatusResponse {
-        data: McString::try_from(json.to_string()).unwrap(),
+        StatusResponse {
+            data: McString::try_from(json.to_string()).unwrap(),
+        }
     }
 }
-}
 
+#[derive(Debug)]
 pub struct StatusResponse {
     //TODO: replace with unlimited length mc string
     data: McString<9999>,
@@ -76,11 +79,18 @@ impl Transfer for StatusResponse {
 
 //TODO: derive macro / macro_rules!
 impl TransferablePacket for StatusResponse {
-    const ID: i32=0;
+    const ID: i32 = 0;
 }
 
+#[derive(Debug)]
 pub struct PongResponse {
     timestamp: Long,
+}
+
+impl PongResponse {
+    pub fn new(timestamp: Long) -> Self {
+        Self { timestamp }
+    }
 }
 
 impl Transfer for PongResponse {

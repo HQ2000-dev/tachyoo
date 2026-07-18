@@ -1,17 +1,22 @@
 pub mod status;
 
-use crate::out::packets::status::{PongResponse, StatusResponse};
+use crate::out::packet::status::{PongResponse, StatusResponse};
 
+#[derive(Debug)]
 pub enum Packet {
-    
+    Status(Status),
+    Login(Login),
+    Config(Config),
+    Play(Play),
 }
 
-
+#[derive(Debug)]
 pub enum Status {
     StatusResponse(StatusResponse),
     PongResponse(PongResponse),
 }
 
+#[derive(Debug)]
 pub enum Login {
     LoginDisconnect = 0,
     Hello = 1,
@@ -21,6 +26,7 @@ pub enum Login {
     CookieRequest = 5,
 }
 
+#[derive(Debug)]
 pub enum Config {
     CookieRequest = 0,
     CustomPayload = 1,
@@ -44,6 +50,7 @@ pub enum Config {
     CodeOfConduct = 19,
 }
 
+#[derive(Debug)]
 pub enum Play {
     BundleDelimiter = 0,
     AddEntity = 1,

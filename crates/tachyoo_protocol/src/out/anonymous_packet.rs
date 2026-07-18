@@ -6,21 +6,21 @@ use tokio::io::AsyncWriteExt;
 use crate::out::{Transfer, TransferablePacket, types::var::int::VarInt};
 
 //having the binary data as an input? (TODO)
-//maybe still a non-raw version for compresion handling? or just bytes?
+//maybe still a non-raw version for compression handling? or just bytes?
 //raw presentation of the data
-pub enum Packet<T> {
+pub enum AnonymousPacket {
     Uncompressed {
         len: VarInt,
         id: VarInt,
         //TODO: tmp
         data: Box<[u8]>,
-        _phantom: PhantomData<T>,
+        //_phantom: PhantomData<T>,
     },
     Compressed {
         len: VarInt,
         //TODO: tmp
         data: Box<[u8]>,
-        _phantom: PhantomData<(T, VarInt)>,
+        //_phantom: PhantomData<(T, VarInt)>,
     },
 }
 
@@ -48,9 +48,11 @@ impl<T> Compressed<T> where T: Transfer {
     }
 }*/
 
-impl<T: TransferablePacket> Packet<T> {
-    pub fn with_compression(transfer: T, compression: Compression) -> Packet<T>
-    {
+impl AnonymousPacket {
+    pub fn with_compression<T: TransferablePacket>(
+        transfer: T,
+        compression: Compression,
+    ) -> AnonymousPacket {
         let mut data = transfer.data();
 
         if let Compression::Compressed { threshold, level } = compression {
@@ -59,36 +61,43 @@ impl<T: TransferablePacket> Packet<T> {
                 data = tokio::task::block_in_place(|| compress(&data, level));
             }
 
-            Packet::Compressed {
+            AnonymousPacket::Compressed {
                 len: VarInt::new(data.len() as i32),
                 data,
-                _phantom: PhantomData,
+                //_phantom: PhantomData,
             }
         } else {
-            Packet::Uncompressed {
+            AnonymousPacket::Uncompressed {
                 len: VarInt::new(data.len() as i32),
                 id: VarInt::new(<T as TransferablePacket>::ID),
                 data,
-                _phantom: PhantomData,
+                //_phantom: PhantomData,
             }
         }
     }
 
-    pub fn new(transfer: T) -> Packet<T> {
-        Packet::with_compression(transfer, Compression::Uncompressed)
+    pub fn new<T: TransferablePacket>(transfer: T) -> AnonymousPacket {
+        AnonymousPacket::with_compression(transfer, Compression::Uncompressed)
     }
 
-    pub async fn send<R: AsyncWriteExt + Unpin>(&self, mut writer: &mut R) -> tokio::io::Result<()> {
+    pub async fn send<R: AsyncWriteExt + Unpin>(
+        &self,
+        mut writer: &mut R,
+    ) -> tokio::io::Result<()> {
         match self {
-            Packet::Compressed { len, data, _phantom } => {
+            AnonymousPacket::Compressed {
+                len,
+                data,
+                //_phantom,
+            } => {
                 writer.write_all(&len.data()).await?;
                 writer.write_all(&data).await
             }
-            Packet::Uncompressed {
+            AnonymousPacket::Uncompressed {
                 len,
                 id,
                 data,
-                _phantom,
+                //_phantom,
             } => {
                 writer.write_all(&len.data()).await?;
                 writer.write_all(&data).await

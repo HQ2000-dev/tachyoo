@@ -3,7 +3,7 @@ use std::io::{self, Read};
 use tokio::{io::AsyncReadExt, task::block_in_place};
 
 use crate::in_::{
-    packets::{Compression, Packet},
+    packet::{Compression, Packet},
     types::var::int::signed::parse_var_int,
 };
 
