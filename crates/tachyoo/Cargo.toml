@@ -4,8 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [features]
-default=["dev"]
-dev=["tokio_console", "snafu/backtrace", "packet_viewer"]
+#default=["dev"]
+dev=[
+    "tokio_console", 
+    "snafu/backtrace", 
+    #"packet_viewer"
+]
 # RUSTFLAGS="--cfg tokio_unstable" needed!
 tokio_console=["dep:console-subscriber"]
 packet_viewer=["dep:flume"]

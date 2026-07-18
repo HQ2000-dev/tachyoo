@@ -8,7 +8,10 @@ edition = "2024"
 [features]
 tokio-console=[]
 packet_viewer=["tachyoo/packet_viewer", "dep:flume"]
-dev=["packet_viewer", "tachyoo/dev"]
+dev=[
+    #"packet_viewer",
+    "tachyoo/dev"
+]
 default=["dev"]
 
 [dependencies]
