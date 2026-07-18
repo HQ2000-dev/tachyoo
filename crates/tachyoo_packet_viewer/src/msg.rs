@@ -1,6 +1,9 @@
-use tachyoo_protocol::{in_::packets::Packet as InPacket, out::packets::Packet as OutPacket};
+use std::time::Duration;
 
+use tachyoo_protocol::{in_::packet::Packet as InPacket, out::packet::Packet as OutPacket};
+
+//cyclic dep problem!
 pub enum Msg {
     Received { packet: InPacket, delta: Duration },
-    Sent { packet: Packet, delta: OutPacket },
+    Sent { packet: OutPacket, delta: OutPacket },
 }
