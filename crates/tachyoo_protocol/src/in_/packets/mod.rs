@@ -5,10 +5,16 @@ use std::default;
 
 use crate::{
     in_::{
-        packets::play::Play, types::{
-            Long, handshake::Handshake, login::{hello::Hello, key::Key}, status::PingRequest, string::string::McString,
+        packet::play::Play,
+        types::{
+            Long,
+            handshake::Handshake,
+            login::{hello::Hello, key::Key},
+            status::PingRequest,
+            string::string::McString,
         },
-    }, out::types::UUID,
+    },
+    out::types::UUID,
 };
 
 #[derive(Default, Debug)]

@@ -11,10 +11,8 @@ pub struct Key {
 }
 
 pub async fn parse_key<R: AsyncReadExt + Unpin>(reader: &mut R) -> io::Result<Key> {
-    Ok(
-        Key {
-            shared_secret: parse_prefixed_byte_array(reader).await?,
-            verify_token: parse_prefixed_byte_array(reader).await?,
-        }
-    )
+    Ok(Key {
+        shared_secret: parse_prefixed_byte_array(reader).await?,
+        verify_token: parse_prefixed_byte_array(reader).await?,
+    })
 }

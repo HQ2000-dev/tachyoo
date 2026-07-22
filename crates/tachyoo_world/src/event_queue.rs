@@ -20,6 +20,8 @@ impl EventQueue {
     }
 
     pub(crate) fn new() -> Self {
-        Self { inner: VecDeque::new() }
+        Self {
+            inner: VecDeque::new(),
+        }
     }
 }

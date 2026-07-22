@@ -1,4 +1,4 @@
-#[derive(Default, Clone, Debug, PartialEq, Eq)]
+#[derive(Default, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ProtocolStage {
     #[default]
     Handshake,

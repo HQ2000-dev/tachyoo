@@ -2,8 +2,7 @@ use std::{io, net::IpAddr};
 
 use tokio::io::AsyncReadExt;
 
-use crate::{in_::{types::string::str::McStr}, out::types::string::McString};
-
+use crate::{in_::types::string::str::McStr, out::types::string::McString};
 
 pub async fn parse_server_addr<R: AsyncReadExt + Unpin>(
     reader: &mut R,

@@ -6,9 +6,7 @@ use bevy_ecs::{
     system::{ResMut, ScheduleSystem},
 };
 
-use crate::{
-    resources::{NextTickTime, Ticks, Tps},
-};
+use crate::resources::{NextTickTime, Ticks, Tps};
 
 pub(crate) fn add_systems(schedule: &mut Schedule) {
     schedule.add_systems((tick_compute).chain());

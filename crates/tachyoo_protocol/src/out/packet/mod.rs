@@ -1,6 +1,9 @@
 pub mod status;
 
-use crate::out::packet::status::{PongResponse, StatusResponse};
+use crate::out::{
+    TransferablePacket,
+    packet::status::{PongResponse, StatusResponse},
+};
 
 #[derive(Debug)]
 pub enum Packet {

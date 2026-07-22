@@ -1,5 +1,5 @@
 use tachyoo_protocol::in_::{
-    packets::Compression,
+    packet::Compression,
     types::handshake::{Handshake, Intent},
 };
 use tachyoo_protocol::stage::ProtocolStage;

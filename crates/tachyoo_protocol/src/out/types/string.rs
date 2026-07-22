@@ -4,6 +4,7 @@ use crate::{
 };
 
 //better name!
+#[derive(Debug)]
 pub struct McString<const MAX_LEN: u16> {
     //max: 32767
     len: VarInt,

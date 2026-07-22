@@ -1,4 +1,4 @@
-pub mod packets;
+pub mod packet;
 pub mod types;
 pub mod var;
 
@@ -8,8 +8,12 @@ use bytes::{BufMut, BytesMut};
 use tokio::{io::AsyncReadExt, task::block_in_place};
 
 use crate::in_::{
-    packets::{Compression, Login, Packet, Status}, types::{
-        handshake::{Intent, parse_handshake}, login::{hello::parse_hello, key::parse_key}, status::parse_ping_request, var::int::{signed::parse_var_int, unsigned::parse_var_uint},
+    packet::{Compression, Login, Packet, Status},
+    types::{
+        handshake::{Intent, parse_handshake},
+        login::{hello::parse_hello, key::parse_key},
+        status::parse_ping_request,
+        var::int::{signed::parse_var_int, unsigned::parse_var_uint},
     },
 };
 use crate::stage::ProtocolStage;
@@ -77,8 +81,7 @@ impl ProtocolParser {
         len: usize,
         id: i32,
     ) -> io::Result<Packet> {
-        
-        let packet=match self.stage {
+        let packet = match self.stage {
             ProtocolStage::Handshake => match id {
                 0 => {
                     let handshake = parse_handshake(reader, len).await?;
@@ -100,7 +103,7 @@ impl ProtocolParser {
                 1 => Packet::Login(Login::Key(parse_key(reader).await?)),
                 2 => unimplemented!("custom queries"),
                 3 => Packet::Login(Login::Hello(parse_hello(reader, len).await?)),
-                _ => panic!("invalid login packet id")
+                _ => panic!("invalid login packet id"),
             },
             ProtocolStage::Config => todo!(),
             ProtocolStage::Play => todo!(),

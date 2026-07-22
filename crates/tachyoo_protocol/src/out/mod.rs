@@ -1,9 +1,9 @@
 use std::io::Write;
 
+pub mod anonymous_packet;
 pub mod packet;
 pub mod packet_ids;
 pub mod types;
-pub mod packets;
 
 //TODO: benchmark write_bytes perf
 // TODO: make Transfer types configs again (maybe) and cache the buffer

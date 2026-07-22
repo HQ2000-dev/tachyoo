@@ -1,17 +1,29 @@
 pub mod event_in;
 pub mod event_out;
 
-use tachyoo_protocol::in_::packets::Status;
-use tachyoo_protocol::in_::{ProtocolParser, packets::Packet as InPacket};
-use tachyoo_protocol::out::packet::Packet as OutPacket;
-use tachyoo_protocol::out::protocol::status::StatusResponse;
-use tachyoo_protocol::stage::ProtocolStage;
-use tokio::runtime::Handle;
-use tokio::sync::Notify;
-use tokio::task::JoinSet;
+use crate::error::*;
+
+use snafu::ResultExt;
+use tachyoo_protocol::{
+    in_::{
+        ProtocolParser,
+        packet::{self as in_packet, Packet as InPacket},
+    },
+    out::{
+        TransferablePacket,
+        anonymous_packet::AnonymousPacket,
+        packet::{
+            self as out_packet, Packet as OutPacket,
+            status::{PongResponse, StatusResponse},
+        },
+    },
+    stage::ProtocolStage,
+};
 use tokio::{
     net::TcpStream,
-    sync::{mpsc, watch},
+    runtime::Handle,
+    sync::mpsc,
+    task::{self, JoinSet, block_in_place, spawn_blocking},
 };
 use tokio_util::sync::CancellationToken;
 
@@ -25,8 +37,8 @@ use crate::{
 
 #[derive(Debug)]
 pub enum PlayerEvent {
-    Packet{
-        packet: tachyoo_protocol::in_::packets::Packet,
+    Packet {
+        packet: tachyoo_protocol::in_::packet::Packet,
         next_stage: ProtocolStage,
     },
     Event(PlayerInEvent),
@@ -36,8 +48,8 @@ pub enum PlayerEvent {
 
 //tmp?
 #[derive(Clone, Debug)]
-pub struct ProtoStageMsg { 
-    state: ProtocolStage, 
+pub struct ProtoStageMsg {
+    state: ProtocolStage,
 }
 
 //TODO: use try_read/write to detect if the stream was closed
@@ -72,9 +84,7 @@ pub async fn player_task(
     })).await.unwrap();*/
 
     //TODO: maybe just an atomic?
-    let (protocol_stage_tx, mut protocol_stage_rx) = mpsc::channel(100);
-
-   
+    let (protocol_stage_tx, mut protocol_stage_rx) = mpsc::channel::<ProtocolStage>(100);
 
     //same here
     local_join_set.spawn(cancel_able(cancel_token.child_token(), async move {
@@ -86,8 +96,8 @@ pub async fn player_task(
         loop {
             msg_tx
                 .send(
-                    PlayerEvent::Packet { packet:
-                        parser
+                    PlayerEvent::Packet {
+                        packet: parser
                             .parse_packet(&mut DebugReader(&mut conn_read))
                             .await
                             .expect("TODO: proper io error (especially unexpected eof) handling!"),
@@ -109,8 +119,11 @@ pub async fn player_task(
     //maybe blocking on compression via a rt handle??
     local_join_set.spawn(cancel_able(cancel_token.child_token(), async move {
         loop {
-            let packet=packet_write_rx.recv().await.unwrap();
-            packet.send(conn_write).await
+            let packet: AnonymousPacket = packet_write_rx.recv().await.unwrap();
+            packet
+                .send(&mut conn_write)
+                .await
+                .context(TcpWriteSnafu {})?;
         }
     }));
 
@@ -121,6 +134,12 @@ pub async fn player_task(
         //TODO: synchronize protocol stages
         let mut data = Data::new();
 
+        async fn encode(packet: impl TransferablePacket + Send + 'static) -> AnonymousPacket {
+            spawn_blocking(|| AnonymousPacket::new(packet))
+                .await
+                .unwrap()
+        }
+
         loop {
             match msg_rx.recv().await.expect("channel closed (todo)") {
                 //TODO: proper sync with the parsing task
@@ -128,16 +147,23 @@ pub async fn player_task(
                     InPacket::Handshake(handshake) => {
                         eprintln!("received handshake ");
                         eprintln!("{:?}", handshake);
-                        
-                        
+
                         //data.conn.handshake_complete(&handshake);
                         //protocol_stage_tx.send(data.conn.stage.clone()).unwrap();
                     }
-                    InPacket::Status(status) => {
-                        match status {
-                            Status::StatusRequest => packet_write_tx.send(OutPacket::new(StatusResponse::new())).await
-                        }
-                    }
+                    InPacket::Status(status) => packet_write_tx
+                        .send(match status {
+                            in_packet::Status::StatusRequest => encode(StatusResponse::new()).await,
+
+                            in_packet::Status::PingRequest(ping) => {
+                                encode(PongResponse::new(ping.timestamp())).await
+                            }
+                        })
+                        .await
+                        .unwrap(),
+                    InPacket::Login(login) => match login {
+                        _ => todo!(),
+                    },
                     _ => todo!(),
                 },
                 _ => unimplemented!(),

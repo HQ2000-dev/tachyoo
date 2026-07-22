@@ -26,8 +26,7 @@ impl eframe::App for PacketViewerApp {
 }
 
 impl PacketViewerApp {
-    pub(crate) fn new(
-        msg_rx: flume::Receiver<Msg>,    ) -> Self {
+    pub(crate) fn new(msg_rx: flume::Receiver<Msg>) -> Self {
         Self {
             msg_rx,
             in_packets: Vec::new(),

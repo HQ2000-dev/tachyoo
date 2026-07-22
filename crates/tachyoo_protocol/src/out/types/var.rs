@@ -3,6 +3,7 @@ pub mod int {
 
     use crate::out::{Buffer, Transfer};
 
+    #[derive(Debug)]
     // #[repr(transparent)]
     pub struct VarInt {
         data: Box<[u8]>,

@@ -2,13 +2,13 @@ use std::io;
 
 use tokio::io::AsyncReadExt;
 
+pub mod array;
 pub mod handshake;
 pub mod login;
 pub mod server_addr;
 pub mod status;
 pub mod string;
 pub mod var;
-pub mod array;
 
 pub type Long = i64;
 
@@ -22,10 +22,10 @@ pub type UShort = u16;
 
 pub type UUID = u128;
 
-pub type Byte=u8;
+pub type Byte = u8;
 
 pub async fn parse_byte<R: AsyncReadExt + Unpin>(reader: &mut R) -> io::Result<Byte> {
-    let byte=reader.read_u8().await?.to_le();
+    let byte = reader.read_u8().await?.to_le();
     Ok(byte)
 }
 
